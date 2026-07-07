@@ -7,24 +7,59 @@ import Button from "@/components/ui/Button";
 
 export default function IntroSection() {
   const containerRef = useRef<HTMLElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
+      // 1. Typing animation for the heading
+      const headingEl = headingRef.current;
+      if (headingEl) {
+        const fullText = "Crafting Digital Excellence.";
+        headingEl.innerHTML = ""; // Clear initial text to start typing
+        const chars = fullText.split("");
+
+        ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: "top 80%",
+          once: true,
+          onEnter: () => {
+            let currentText = "";
+            chars.forEach((char, index) => {
+              gsap.delayedCall(index * 0.05, () => {
+                currentText += char;
+                // Add a gold blinking cursor during typing
+                headingEl.innerHTML =
+                  currentText +
+                  `<span class="text-[#C8A97E] animate-pulse">|</span>`;
+
+                // Remove the cursor after typing finishes
+                if (index === chars.length - 1) {
+                  gsap.delayedCall(0.5, () => {
+                    headingEl.innerHTML = currentText;
+                  });
+                }
+              });
+            });
+          },
+        });
+      }
+
+      // 2. Trigger-once fade-in animation for the paragraphs on the right side
       gsap.fromTo(
         ".reveal-text",
-        { y: 100, opacity: 0 },
+        { y: 40, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          stagger: 0.1,
-          ease: "none",
+          stagger: 0.15,
+          duration: 1.2,
+          ease: "power3.out",
           scrollTrigger: {
-            trigger: ".intro-container",
-            start: "top 80%",
-            end: "bottom 60%",
-            scrub: 1,
+            trigger: containerRef.current,
+            start: "top 75%",
+            once: true,
           },
         }
       );
@@ -52,6 +87,7 @@ export default function IntroSection() {
             Who We Are
           </p>
           <h2
+            ref={headingRef}
             className="text-4xl md:text-5xl font-bold leading-tight text-[#F0EDE8]"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
@@ -89,3 +125,4 @@ export default function IntroSection() {
     </section>
   );
 }
+
