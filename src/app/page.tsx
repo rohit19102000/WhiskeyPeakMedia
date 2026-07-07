@@ -8,8 +8,7 @@ import ProcessSection from "@/components/home/ProcessSection";
 import TeamSection from "@/components/home/TeamSection";
 import StatsSection from "@/components/home/StatsSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
-import PhilosophySection from "@/components/home/PhilosophySection";
-import FAQSection from "@/components/home/FAQSection";
+import PhilosophyFAQSection from "@/components/home/PhilosophyFAQSection";
 import ContactSection from "@/components/home/ContactSection";
 
 export const metadata: Metadata = {
@@ -30,9 +29,9 @@ export default function Home() {
       <TeamSection />
       <StatsSection />
       <TestimonialsSection />
-      <PhilosophySection />
-      <FAQSection />
+      <PhilosophyFAQSection />
       <ContactSection />
     </div>
   );
 }
+
