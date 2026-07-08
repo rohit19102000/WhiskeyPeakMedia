@@ -7,6 +7,69 @@ import { FAQS } from "@/data/faqs";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+/* ────────────────────────── HOVER WORD SUBCOMPONENT ────────────────────────── */
+function HoverWord({
+  word,
+  isSpecial,
+  cleanWord,
+  isSublabel,
+}: {
+  word: string;
+  isSpecial: boolean;
+  cleanWord: string;
+  isSublabel?: boolean;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [canHover, setCanHover] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(hover: hover)");
+    setCanHover(media.matches);
+  }, []);
+
+  const handleMouseEnter = () => {
+    if (canHover) setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (canHover) setIsHovered(false);
+  };
+
+  // Lighter gold for hover: #FFE5B4
+  // Normal gold for special: #C8A97E
+  // Normal gray-white for regular: rgba(240, 237, 232, 0.65)
+  // Sublabel default color: text-[#C8A97E]/60
+  let color = isSpecial
+    ? "#C8A97E"
+    : isSublabel
+    ? "rgba(200, 169, 126, 0.6)"
+    : "rgba(240, 237, 232, 0.65)";
+  
+  let textShadow = "none";
+
+  if (isHovered) {
+    color = "#E0C39C";
+    textShadow = "0 0 6px rgba(224, 195, 156, 0.55)";
+  }
+
+  return (
+    <span
+      className="inline-block transition-all duration-300 ease-out cursor-default"
+      style={{
+        color,
+        textShadow,
+        fontFamily: isSpecial ? "var(--font-playfair), serif" : "inherit",
+        fontStyle: isSpecial ? "italic" : "normal",
+      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {isSpecial ? cleanWord : word}
+    </span>
+  );
+}
+
+/* ────────────────────────── MAIN COMPONENT ────────────────────────── */
 export default function PhilosophyFAQSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -35,15 +98,18 @@ export default function PhilosophyFAQSection() {
       });
 
       // 1. FAQ content slides up from bottom (y: 100vh -> 0) and fades in
+      // Animate pointerEvents so it is only interactive when visible
       tl.fromTo(
         faqRef.current,
         {
           opacity: 0,
           y: "100vh",
+          pointerEvents: "none",
         },
         {
           opacity: 1,
           y: 0,
+          pointerEvents: "auto",
           duration: 1,
           ease: "none", // Linear ease for scrubbing consistency
         },
@@ -51,13 +117,20 @@ export default function PhilosophyFAQSection() {
       );
 
       // 2. Philosophy text fades out and slides up *only after* FAQ heading reaches center
-      // This starts at 35% of progress (when FAQ header reaches the position in the screenshot)
-      tl.to(
+      // Animate pointerEvents so it doesn't block clicks when hidden
+      tl.fromTo(
         philosophyRef.current,
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          pointerEvents: "auto",
+        },
         {
           opacity: 0,
           y: -80,
           scale: 0.92,
+          pointerEvents: "none",
           duration: 0.35, // relatively quick transition
           ease: "power1.inOut",
         },
@@ -79,6 +152,10 @@ export default function PhilosophyFAQSection() {
     return () => ctx.revert();
   }, []);
 
+  const sublabelWords = ["Our", "Philosophy"];
+  const rawText = "We don't just build websites. We build the digital foundations of ambitious brands. Every line of code is written with intent. Every animation serves a purpose. Every pixel earns its place.";
+  const words = rawText.split(" ");
+
   return (
     <section id="philosophy" ref={containerRef} className="relative w-full bg-[#0A0A0A] h-screen overflow-hidden">
       <style>{`
@@ -94,39 +171,44 @@ export default function PhilosophyFAQSection() {
         {/* ── PHILOSOPHY CONTENT (absolute) ── */}
         <div
           ref={philosophyRef}
-          className="absolute max-w-4xl mx-auto px-6 w-full text-center z-10 pointer-events-none"
+          className="absolute max-w-4xl mx-auto px-6 w-full text-center z-10 pointer-events-auto"
           style={{ willChange: "transform, opacity" }}
         >
-          <p className="text-xs uppercase tracking-[0.3em] text-[#C8A97E]/60 mb-12">
-            Our Philosophy
+          {/* Sublabel "Our Philosophy" */}
+          <p className="text-xs uppercase tracking-[0.3em] mb-12">
+            {sublabelWords.map((word, i) => (
+              <span key={i} className="inline-block mr-[0.25em]">
+                <HoverWord
+                  word={word}
+                  isSpecial={false}
+                  cleanWord={word}
+                  isSublabel={true}
+                />
+              </span>
+            ))}
           </p>
 
+          {/* Main heading */}
           <h2
-            className="text-3xl md:text-5xl font-light leading-normal text-[#F0EDE8]"
+            className="text-3xl md:text-5xl font-light leading-normal flex flex-wrap justify-center gap-y-2 md:gap-y-4"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
-            We don&apos;t just build websites. We build the digital foundations
-            of ambitious brands. Every line of code is written with{" "}
-            <em
-              className="not-italic text-[#C8A97E]"
-              style={{
-                fontFamily: "var(--font-playfair), serif",
-                fontStyle: "italic",
-              }}
-            >
-              intent
-            </em>
-            . Every animation serves a{" "}
-            <em
-              className="not-italic text-[#C8A97E]"
-              style={{
-                fontFamily: "var(--font-playfair), serif",
-                fontStyle: "italic",
-              }}
-            >
-              purpose
-            </em>
-            . Every pixel earns its place.
+            {words.map((word, index) => {
+              const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+              const isSpecial = cleanWord === "intent" || cleanWord === "purpose";
+              const hasPeriod = word.endsWith(".");
+
+              return (
+                <span key={index} className="inline-block mr-[0.25em]">
+                  <HoverWord
+                    word={word}
+                    isSpecial={isSpecial}
+                    cleanWord={cleanWord}
+                  />
+                  {isSpecial && hasPeriod && "."}
+                </span>
+              );
+            })}
           </h2>
 
           <div className="w-px h-20 bg-[#C8A97E]/20 mx-auto mt-20" />
@@ -135,7 +217,7 @@ export default function PhilosophyFAQSection() {
         {/* ── FAQ CONTENT (absolute) ── */}
         <div
           ref={faqRef}
-          className="absolute max-w-4xl mx-auto px-6 w-full opacity-0 pointer-events-auto z-20 overflow-y-auto max-h-[85vh] py-8 no-scrollbar"
+          className="absolute max-w-4xl mx-auto px-6 w-full opacity-0 pointer-events-none z-20 overflow-y-auto max-h-[85vh] py-8 no-scrollbar"
           style={{
             willChange: "transform, opacity",
             msOverflowStyle: "none",

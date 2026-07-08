@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -18,17 +19,51 @@ export default function Hero() {
     gsap.registerPlugin(ScrollTrigger);
 
     if (textRef.current) {
-      gsap.fromTo(
-        textRef.current.children,
-        { y: 100, opacity: 0 },
+      const tl = gsap.timeline();
+
+      // Label entrance
+      tl.fromTo(
+        ".hero-label",
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.0, ease: "power3.out", delay: 0.3 }
+      );
+
+      // Staggered 3D roll-in for letters
+      tl.fromTo(
+        ".hero-letter",
         {
-          y: 0,
+          opacity: 0,
+          y: 70,
+          rotateX: -80,
+          scale: 0.85,
+        },
+        {
           opacity: 1,
-          duration: 1.5,
-          stagger: 0.2,
-          ease: "power4.out",
-          delay: 0.5,
-        }
+          y: 0,
+          rotateX: 0,
+          scale: 1,
+          stagger: 0.035,
+          duration: 1.1,
+          ease: "back.out(1.5)",
+          transformOrigin: "50% 50% -50",
+        },
+        "-=0.7"
+      );
+
+      // Subtext entrance
+      tl.fromTo(
+        ".hero-subtext",
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: "power3.out" },
+        "-=0.6"
+      );
+
+      // Buttons entrance
+      tl.fromTo(
+        ".hero-buttons",
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: "power3.out" },
+        "-=0.7"
       );
     }
   }, []);
@@ -40,93 +75,137 @@ export default function Hero() {
     }
   };
 
+  const words = "WHISKEY PEAK".split(" ");
+
   return (
-    <section
-      ref={sectionRef}
-      className="relative h-screen w-full overflow-hidden bg-black"
-    >
-      {/* Video Background */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover opacity-50"
+    <>
+      <style>{`
+        /* Gold metallic reflection sweep */
+        .hero-title-shimmer {
+          background: linear-gradient(
+            to right,
+            #F0EDE8 15%,
+            #C8A97E 35%,
+            #FFFFFF 50%,
+            #C8A97E 65%,
+            #F0EDE8 85%
+          );
+          background-size: 200% auto;
+          color: transparent;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: goldShine 6s linear infinite;
+        }
+
+        @keyframes goldShine {
+          0% {
+            background-position: 200% center;
+          }
+          100% {
+            background-position: -200% center;
+          }
+        }
+      `}</style>
+
+      <section
+        ref={sectionRef}
+        className="relative h-screen w-full overflow-hidden bg-black"
       >
-        <source
-          src="https://cdn.coverr.co/videos/coverr-a-software-developer-working-on-a-computer-7710/1080p.mp4"
-          type="video/mp4"
-        />
-      </video>
-
-      {/* Dark Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80" />
-
-      {/* Content */}
-      <motion.div
-        style={{ y: textY }}
-        className="relative z-10 flex items-center justify-center h-full w-full px-6"
-      >
-        <div ref={textRef} className="text-center flex flex-col items-center gap-6">
-          {/* Label */}
-          <p className="text-xs md:text-sm tracking-[0.4em] uppercase text-[#C8A97E]">
-            Premium Web Design Agency
-          </p>
-
-          {/* Heading */}
-          <h1
-            className="text-6xl md:text-9xl font-bold tracking-tight text-[#F0EDE8] leading-none"
-            style={{ fontFamily: "var(--font-playfair), serif" }}
-          >
-            WHISKEY PEAK
-          </h1>
-
-          {/* Subtext */}
-          <p className="text-[#C8C4BC] font-light max-w-xl text-base md:text-lg">
-            We craft digital experiences that convert visitors into customers.
-            Premium websites with motion design that moves.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex gap-6 mt-2">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => scrollTo("#contact")}
-            >
-              Start Project
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => scrollTo("#portfolio")}
-            >
-              View Work
-            </Button>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        style={{ opacity: indicatorOpacity }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3"
-      >
-        <span className="text-[10px] uppercase tracking-widest text-white/50">
-          Scroll
-        </span>
-        <div className="w-[1px] h-12 bg-white/20 overflow-hidden">
-          <motion.div
-            animate={{ y: ["-100%", "100%"] }}
-            transition={{
-              repeat: Infinity,
-              duration: 1.5,
-              ease: "linear",
-            }}
-            className="w-full h-1/2 bg-[#C8A97E]"
+        {/* Background Image */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none select-none">
+          <Image
+            src="/images/hero-bg.png"
+            alt="Whiskey Peak Media Hero Background"
+            fill
+            priority
+            className="object-cover opacity-45"
           />
         </div>
-      </motion.div>
-    </section>
+
+        {/* Dark Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/85" />
+
+        {/* Content */}
+        <motion.div
+          style={{ y: textY }}
+          className="relative z-10 flex items-center justify-center h-full w-full px-6"
+        >
+          <div
+            ref={textRef}
+            className="text-center flex flex-col items-center gap-6"
+            style={{ perspective: "1000px" }}
+          >
+            {/* Label */}
+            <p className="hero-label text-xs md:text-sm tracking-[0.4em] uppercase text-[#C8A97E]">
+              Premium Web Design Agency
+            </p>
+
+            {/* Heading */}
+            <h1
+              className="hero-title-shimmer text-6xl md:text-9xl font-bold tracking-tight leading-none flex flex-wrap justify-center gap-x-6 md:gap-x-12 overflow-hidden py-2"
+              style={{ fontFamily: "var(--font-playfair), serif" }}
+            >
+              {words.map((word, wIdx) => (
+                <span key={wIdx} className="inline-block whitespace-nowrap">
+                  {word.split("").map((char, cIdx) => (
+                    <span
+                      key={cIdx}
+                      className="hero-letter inline-block transform-gpu text-inherit"
+                    >
+                      {char}
+                    </span>
+                  ))}
+                </span>
+              ))}
+            </h1>
+
+            {/* Subtext */}
+            <p className="hero-subtext text-[#C8C4BC] font-light max-w-xl text-base md:text-lg">
+              We craft digital experiences that convert visitors into customers.
+              Premium websites with motion design that moves.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="hero-buttons flex gap-6 mt-2">
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => scrollTo("#contact")}
+              >
+                Start Project
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => scrollTo("#portfolio")}
+              >
+                View Work
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          style={{ opacity: indicatorOpacity }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3"
+        >
+          <span className="text-[10px] uppercase tracking-widest text-white/50">
+            Scroll
+          </span>
+          <div className="w-[1px] h-12 bg-white/20 overflow-hidden">
+            <motion.div
+              animate={{ y: ["-100%", "100%"] }}
+              transition={{
+                repeat: Infinity,
+                duration: 1.5,
+                ease: "linear",
+              }}
+              className="w-full h-1/2 bg-[#C8A97E]"
+            />
+          </div>
+        </motion.div>
+      </section>
+    </>
   );
 }

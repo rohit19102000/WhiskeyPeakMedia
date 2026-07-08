@@ -30,20 +30,20 @@ export default function Footer() {
       gsap.fromTo(
         contentRef.current,
         {
-          y: 40,
+          y: 30,
           opacity: 0,
-          filter: "blur(12px)",
+          filter: "blur(8px)",
         },
         {
           y: 0,
           opacity: 1,
           filter: "blur(0px)",
-          ease: "none",
+          duration: 1.0,
+          ease: "power3.out",
           scrollTrigger: {
             trigger: footerRef.current,
-            start: "top 90%",
-            end: "top 40%",
-            scrub: true,
+            start: "top 95%", // triggers when footer enters viewport
+            toggleActions: "play none none none",
           },
         }
       );
