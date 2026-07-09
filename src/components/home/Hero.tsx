@@ -148,7 +148,7 @@ export default function Hero() {
 
             {/* Heading */}
             <h1
-              className="text-6xl md:text-9xl font-bold tracking-tight leading-none flex flex-wrap justify-center gap-x-6 md:gap-x-12 overflow-hidden py-2"
+              className="text-4xl sm:text-5xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-none flex flex-nowrap justify-center gap-x-3 md:gap-x-8 overflow-hidden py-2 whitespace-nowrap w-full"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
               {words.map((word, wIdx) => (

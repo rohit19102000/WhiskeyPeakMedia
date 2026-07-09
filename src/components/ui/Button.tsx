@@ -35,9 +35,9 @@ export default function Button({
   };
 
   const variants = {
-    primary: "bg-[#C8A97E] text-[#0A0A0A] hover:bg-[#D4B88F] border border-transparent",
-    outline: "bg-transparent text-[#C8A97E] border border-[#C8A97E] hover:bg-[#C8A97E] hover:text-[#0A0A0A]",
-    ghost: "bg-transparent text-[#F0EDE8] hover:bg-white/5 border border-transparent",
+    primary: "bg-gold text-background hover:bg-gold-hover border border-transparent",
+    outline: "bg-transparent text-gold border border-gold hover:bg-gold hover:text-background",
+    ghost: "bg-transparent text-foreground hover:bg-white/5 border border-transparent",
   };
 
   const sizes = {

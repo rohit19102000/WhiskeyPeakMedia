@@ -122,7 +122,7 @@ export default function Header() {
                 style={{ fontFamily: "var(--font-inter), sans-serif" }}
               >
                 {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 group-hover:w-full h-[1px] bg-[#C8A97E] transition-all duration-300 ease-out" />
+                <span className="absolute -bottom-1 left-0 w-0 group-hover:w-full h-[1px] bg-gold transition-all duration-300 ease-out" />
               </a>
             ))}
           </nav>
@@ -130,7 +130,7 @@ export default function Header() {
           {/* Desktop CTA */}
           <button
             onClick={handleCtaClick}
-            className="hidden lg:block px-7 py-2.5 bg-[#C8A97E] text-[#0A0A0A] text-[12px] uppercase tracking-[0.15em] font-semibold rounded-sm hover:bg-[#D4B88F] transition-colors duration-300 cursor-pointer"
+            className="hidden lg:block px-7 py-2.5 bg-gold text-background text-[12px] uppercase tracking-[0.15em] font-semibold rounded-sm hover:bg-gold-hover transition-colors duration-300 cursor-pointer"
             style={{ fontFamily: "var(--font-inter), sans-serif" }}
           >
             Start Project
