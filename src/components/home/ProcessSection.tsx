@@ -61,6 +61,7 @@ export default function ProcessSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [isFixed, setIsFixed] = useState(false);
   const lenis = useLenis();
 
   /* ── image stack card refs ── */
@@ -185,11 +186,15 @@ export default function ProcessSection() {
         if (activeIdxRef.current < STEPS.length - 1) {
           lenis?.stop();
           isScrollLocked.current = true;
+          setIsFixed(true);
           lenis?.scrollTo(container, { duration: 0.25, immediate: true });
         }
       },
       onLeave: () => {
         enteredFromBottom.current = false;
+        setIsFixed(false);
+        lenis?.start();
+        isScrollLocked.current = false;
       },
       onEnterBack: () => {
         enteredFromBottom.current = true;
@@ -203,9 +208,14 @@ export default function ProcessSection() {
 
           lenis?.stop();
           isScrollLocked.current = true;
+          setIsFixed(true);
           lenis?.scrollTo(container, { duration: 0.25, immediate: true });
           
           enteredFromBottom.current = false; // Reset flag
+        } else {
+          setIsFixed(false);
+          lenis?.start();
+          isScrollLocked.current = false;
         }
       },
     });
@@ -284,6 +294,7 @@ export default function ProcessSection() {
       } else {
         lenis?.start();
         isScrollLocked.current = false;
+        setIsFixed(false);
       }
     };
 
@@ -330,12 +341,14 @@ export default function ProcessSection() {
       } else {
         lenis?.start();
         isScrollLocked.current = false;
+        setIsFixed(false);
       }
     };
 
     const handleLinkClick = () => {
       lenis?.start();
       isScrollLocked.current = false;
+      setIsFixed(false);
     };
 
     // Add click listeners to all links in the header and navigation
@@ -375,6 +388,12 @@ export default function ProcessSection() {
           display: flex;
           flex-direction: column;
           justify-content: center;
+        }
+        .process-sticky.is-fixed {
+          position: fixed;
+          inset: 0;
+          height: 100dvh;
+          z-index: 40;
         }
 
         /* ── heading bar ── */
@@ -482,18 +501,20 @@ export default function ProcessSection() {
         /* ─────── RESPONSIVE ─────── */
         @media (max-width: 768px) {
           .process-heading-bar {
-            padding: 24px;
+            padding: 16px 24px;
+            top: 76px;
           }
           .process-cards-container {
-            height: 60vh;
+            height: 56vh;
             width: 95%;
+            margin-top: 48px;
           }
           .process-card-content {
             padding: 24px;
             gap: 12px;
           }
           .process-card-title {
-            font-size: 32px;
+            font-size: 30px;
           }
           .process-card-body {
             font-size: 14px;
@@ -505,7 +526,7 @@ export default function ProcessSection() {
       `}</style>
 
       <section id="process" ref={containerRef} className="process-section">
-        <div ref={stickyRef} className="process-sticky">
+        <div ref={stickyRef} className={`process-sticky ${isFixed ? "is-fixed" : ""}`}>
           
           {/* ── heading bar ── */}
           <div className="process-heading-bar">
