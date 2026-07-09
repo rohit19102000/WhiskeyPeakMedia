@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { useLenis } from "lenis/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -60,6 +61,7 @@ export default function ProcessSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const lenis = useLenis();
 
   /* ── image stack card refs ── */
   const imageCardsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -69,6 +71,8 @@ export default function ProcessSection() {
   const prevIdxRef = useRef(0);
   const isAnimatingRef = useRef(false);
   const wipeRef = useRef<HTMLDivElement>(null);
+  const isScrollLocked = useRef(false);
+  const enteredFromBottom = useRef(false);
 
   /* ── helper to update DOM states based on a progress value val (0→1) ── */
   const updateProgressElements = useCallback((prevIdx: number, targetIdx: number, val: number) => {
@@ -170,17 +174,45 @@ export default function ProcessSection() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
-    const pin = ScrollTrigger.create({
-      trigger: containerRef.current,
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Trigger ScrollTrigger lock callbacks when section hits top top
+    const lockTrigger = ScrollTrigger.create({
+      trigger: container,
       start: "top top",
-      end: "+=100%", // Pin for 100vh worth of scrolling distance
-      pin: stickyRef.current,
-      pinSpacing: true,
+      onEnter: () => {
+        if (activeIdxRef.current < STEPS.length - 1) {
+          lenis?.stop();
+          isScrollLocked.current = true;
+          lenis?.scrollTo(container, { duration: 0.25, immediate: true });
+        }
+      },
+      onLeave: () => {
+        enteredFromBottom.current = false;
+      },
+      onEnterBack: () => {
+        enteredFromBottom.current = true;
+      },
+      onLeaveBack: () => {
+        if (enteredFromBottom.current) {
+          // Entering from bottom: initialize to last step
+          setActiveIdx(STEPS.length - 1);
+          activeIdxRef.current = STEPS.length - 1;
+          updateProgressElements(0, STEPS.length - 1, 1.0);
+
+          lenis?.stop();
+          isScrollLocked.current = true;
+          lenis?.scrollTo(container, { duration: 0.25, immediate: true });
+          
+          enteredFromBottom.current = false; // Reset flag
+        }
+      },
     });
 
     // Auto reveal first step when entering section trigger zone
     const revealFirst = ScrollTrigger.create({
-      trigger: containerRef.current,
+      trigger: container,
       start: "top 80%",
       once: true,
       onEnter: () => {
@@ -205,10 +237,10 @@ export default function ProcessSection() {
     });
 
     return () => {
-      pin.kill();
+      lockTrigger.kill();
       revealFirst.kill();
     };
-  }, [updateProgressElements]);
+  }, [updateProgressElements, lenis]);
 
   /* ── Scroll wheel & Touch swipe hijacking ── */
   useEffect(() => {
@@ -219,12 +251,7 @@ export default function ProcessSection() {
     let touchStartY = 0;
 
     const handleWheel = (e: WheelEvent) => {
-      const rect = container.getBoundingClientRect();
-      const threshold = 15;
-      const isPinned =
-        rect.top <= threshold && rect.bottom >= window.innerHeight - threshold;
-
-      if (!isPinned) return;
+      if (!isScrollLocked.current) return;
 
       const direction = e.deltaY > 0 ? "down" : "up";
 
@@ -237,7 +264,12 @@ export default function ProcessSection() {
 
       if (shouldBlock) {
         e.preventDefault();
+        lenis?.stop();
+
         if (isAnimatingRef.current || isCooldown) return;
+
+        // Auto snap section to top of viewport
+        lenis?.scrollTo(container, { duration: 0.3 });
 
         isCooldown = true;
         setTimeout(() => {
@@ -249,6 +281,9 @@ export default function ProcessSection() {
             ? activeIdxRef.current + 1
             : activeIdxRef.current - 1;
         goToStep(targetIdx);
+      } else {
+        lenis?.start();
+        isScrollLocked.current = false;
       }
     };
 
@@ -257,12 +292,7 @@ export default function ProcessSection() {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      const rect = container.getBoundingClientRect();
-      const threshold = 15;
-      const isPinned =
-        rect.top <= threshold && rect.bottom >= window.innerHeight - threshold;
-
-      if (!isPinned) return;
+      if (!isScrollLocked.current) return;
 
       const touchEndY = e.touches[0].clientY;
       const diffY = touchStartY - touchEndY;
@@ -280,7 +310,12 @@ export default function ProcessSection() {
 
       if (shouldBlock) {
         if (e.cancelable) e.preventDefault();
+        lenis?.stop();
+
         if (isAnimatingRef.current || isCooldown) return;
+
+        // Auto snap section to top of viewport
+        lenis?.scrollTo(container, { duration: 0.3 });
 
         isCooldown = true;
         setTimeout(() => {
@@ -292,8 +327,22 @@ export default function ProcessSection() {
             ? activeIdxRef.current + 1
             : activeIdxRef.current - 1;
         goToStep(targetIdx);
+      } else {
+        lenis?.start();
+        isScrollLocked.current = false;
       }
     };
+
+    const handleLinkClick = () => {
+      lenis?.start();
+      isScrollLocked.current = false;
+    };
+
+    // Add click listeners to all links in the header and navigation
+    const navLinks = document.querySelectorAll("a, button");
+    navLinks.forEach((link) => {
+      link.addEventListener("click", handleLinkClick);
+    });
 
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
@@ -303,20 +352,23 @@ export default function ProcessSection() {
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
+      navLinks.forEach((link) => {
+        link.removeEventListener("click", handleLinkClick);
+      });
+      lenis?.start();
     };
-  }, [goToStep]);
+  }, [goToStep, lenis]);
 
   return (
     <>
       <style>{`
         .process-section {
           position: relative;
-          height: 200vh;
+          height: 100vh;
           background: #0A0A0A;
         }
         .process-sticky {
-          position: sticky;
-          top: 0;
+          position: relative;
           height: 100vh;
           overflow: hidden;
           background: #0A0A0A;
@@ -356,7 +408,7 @@ export default function ProcessSection() {
           position: relative;
           width: 92%;
           max-width: 1500px;
-          height: 85vh;
+          height: 76vh;
           margin: 0 auto;
           display: flex;
           align-items: center;
