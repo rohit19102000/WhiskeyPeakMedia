@@ -77,10 +77,32 @@ export default function PhilosophyFAQSection() {
   const faqRef = useRef<HTMLDivElement>(null);
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileGlowPos, setMobileGlowPos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
   const toggleIndex = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -147,6 +169,41 @@ export default function PhilosophyFAQSection() {
         },
         0.35 // Start at 35% progress
       );
+
+      // 4. Animate mobile glow position along lemniscate path
+      const glowProgress = { value: 0 };
+      tl.to(
+        glowProgress,
+        {
+          value: 1,
+          duration: 1, // runs across the entire scroll duration of the timeline (0 to 1)
+          ease: "none",
+          onUpdate: () => {
+            const p = glowProgress.value;
+            const t = p * 2 * Math.PI;
+
+            const container = stickyRef.current;
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            const w = Math.min(rect.width * 0.95, 1850);
+            const h = w * 0.5;
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            // Lemniscate width and height matching SVG loops
+            const scaleX = w * 0.38;
+            const scaleY = h * 0.55;
+
+            const denom = 1 + Math.sin(t) * Math.sin(t);
+            const x = centerX + (scaleX * Math.cos(t)) / denom;
+            const y = centerY + (scaleY * Math.sin(t) * Math.cos(t)) / denom;
+
+            setMobileGlowPos({ x, y });
+          },
+        },
+        0
+      );
     }, containerRef);
 
     return () => ctx.revert();
@@ -157,7 +214,14 @@ export default function PhilosophyFAQSection() {
   const words = rawText.split(" ");
 
   return (
-    <section id="philosophy" ref={containerRef} className="relative w-full bg-[#0A0A0A] h-screen overflow-hidden">
+    <section
+      id="philosophy"
+      ref={containerRef}
+      className="relative w-full bg-[#0A0A0A] h-screen overflow-hidden"
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
       <style>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
@@ -168,6 +232,65 @@ export default function PhilosophyFAQSection() {
         ref={stickyRef}
         className="relative w-full h-full flex items-center justify-center bg-[#0A0A0A]"
       >
+        {/* ── BACKGROUND INFINITY SVG ── */}
+        {/* Base Layer: Faint */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 opacity-15">
+          <svg
+            viewBox="0 0 100 50"
+            className="w-full max-w-[1850px] aspect-[100/50] text-white/10"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M 50 25 C 36 9, 22 7, 10 21 C -2 35, 6 43, 26 32 C 38 25, 46 25, 50 25 C 54 25, 62 25, 74 18 C 94 7, 98 17, 88 27 C 78 37, 64 36, 50 25 Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.8"
+            />
+          </svg>
+        </div>
+
+        {/* Glow Layer: Spotlit */}
+        <div
+          className="absolute inset-0 pointer-events-none select-none z-0"
+          style={{
+            maskImage: isMobile
+              ? `radial-gradient(circle 90px at ${mobileGlowPos.x}px ${mobileGlowPos.y}px, white 0%, rgba(255,255,255,0.4) 40%, transparent 100%)`
+              : isHovering
+              ? `radial-gradient(circle 160px at ${mousePos.x}px ${mousePos.y}px, white 0%, rgba(255,255,255,0.4) 40%, transparent 100%)`
+              : "radial-gradient(circle 0px at 0px 0px, transparent 100%)",
+            WebkitMaskImage: isMobile
+              ? `radial-gradient(circle 90px at ${mobileGlowPos.x}px ${mobileGlowPos.y}px, white 0%, rgba(255,255,255,0.4) 40%, transparent 100%)`
+              : isHovering
+              ? `radial-gradient(circle 160px at ${mousePos.x}px ${mousePos.y}px, white 0%, rgba(255,255,255,0.4) 40%, transparent 100%)`
+              : "radial-gradient(circle 0px at 0px 0px, transparent 100%)",
+          }}
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg
+              viewBox="0 0 100 50"
+              className="w-full max-w-[1850px] aspect-[100/50] text-[#C8A97E]/35"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ filter: "url(#svg-glow)" }}
+            >
+              <defs>
+                <filter id="svg-glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="1.2" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path
+                d="M 50 25 C 36 9, 22 7, 10 21 C -2 35, 6 43, 26 32 C 38 25, 46 25, 50 25 C 54 25, 62 25, 74 18 C 94 7, 98 17, 88 27 C 78 37, 64 36, 50 25 Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
+            </svg>
+          </div>
+        </div>
+
         {/* ── PHILOSOPHY CONTENT (absolute) ── */}
         <div
           ref={philosophyRef}
