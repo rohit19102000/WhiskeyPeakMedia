@@ -82,6 +82,7 @@ export default function Hero() {
       <style>{`
         /* Gold metallic reflection sweep */
         .hero-title-shimmer {
+          color: #C8A97E;
           background: linear-gradient(
             to right,
             #F0EDE8 15%,
@@ -91,10 +92,15 @@ export default function Hero() {
             #F0EDE8 85%
           );
           background-size: 200% auto;
-          color: transparent;
           -webkit-background-clip: text;
           background-clip: text;
           animation: goldShine 6s linear infinite;
+        }
+
+        @supports (-webkit-background-clip: text) or (background-clip: text) {
+          .hero-title-shimmer {
+            color: transparent;
+          }
         }
 
         @keyframes goldShine {
@@ -142,7 +148,7 @@ export default function Hero() {
 
             {/* Heading */}
             <h1
-              className="hero-title-shimmer text-6xl md:text-9xl font-bold tracking-tight leading-none flex flex-wrap justify-center gap-x-6 md:gap-x-12 overflow-hidden py-2"
+              className="text-6xl md:text-9xl font-bold tracking-tight leading-none flex flex-wrap justify-center gap-x-6 md:gap-x-12 overflow-hidden py-2"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
               {words.map((word, wIdx) => (
@@ -150,7 +156,7 @@ export default function Hero() {
                   {word.split("").map((char, cIdx) => (
                     <span
                       key={cIdx}
-                      className="hero-letter inline-block transform-gpu text-inherit"
+                      className="hero-letter inline-block transform-gpu hero-title-shimmer"
                     >
                       {char}
                     </span>
