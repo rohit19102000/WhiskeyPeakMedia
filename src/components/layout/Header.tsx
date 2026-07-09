@@ -84,26 +84,67 @@ export default function Header() {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="flex flex-col leading-none select-none"
+            className="flex items-center gap-3.5 leading-none select-none"
           >
-            <span
-              className={cn(
-                "text-[15px] font-bold uppercase tracking-[0.15em] transition-colors duration-500",
-                scrolled ? "text-white" : "text-white/80"
-              )}
-              style={{ fontFamily: "var(--font-inter), sans-serif" }}
+            {/* Custom Monogram Monolith Logo (W & M Crossed) */}
+            <svg
+              width="34"
+              height="34"
+              viewBox="0 0 100 100"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="flex-shrink-0"
             >
-              WHISKEY PEAK
-            </span>
-            <span
-              className={cn(
-                "text-[10px] italic tracking-[0.08em] mt-[2px] transition-colors duration-500",
-                scrolled ? "text-[#C8A97E]" : "text-[#C8A97E]/70"
-              )}
-              style={{ fontFamily: "var(--font-playfair), serif" }}
-            >
-              Media
-            </span>
+              <rect
+                x="15"
+                y="15"
+                width="70"
+                height="70"
+                rx="8"
+                fill="none"
+                stroke="rgba(200, 169, 126, 0.25)"
+                strokeWidth="1.5"
+                transform="rotate(45 50 50)"
+              />
+              <path
+                d="M 24 67 L 37 28 L 50 63 L 63 28 L 76 67"
+                fill="none"
+                stroke="#F0EDE8"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ opacity: scrolled ? 1 : 0.85, transition: "opacity 0.5s" }}
+              />
+              <path
+                d="M 24 33 L 37 72 L 50 37 L 63 72 L 76 33"
+                fill="none"
+                stroke="#C8A97E"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+
+            <div className="flex flex-col">
+              <span
+                className={cn(
+                  "text-[15px] font-bold uppercase tracking-[0.15em] transition-colors duration-500",
+                  scrolled ? "text-white" : "text-white/80"
+                )}
+                style={{ fontFamily: "var(--font-inter), sans-serif" }}
+              >
+                WHISKEY PEAK
+              </span>
+              <span
+                className={cn(
+                  "text-[10px] italic tracking-[0.08em] mt-[2px] transition-colors duration-500",
+                  scrolled ? "text-[#C8A97E]" : "text-[#C8A97E]/70"
+                )}
+                style={{ fontFamily: "var(--font-playfair), serif" }}
+              >
+                Media
+              </span>
+            </div>
           </a>
 
           {/* Desktop Navigation */}
