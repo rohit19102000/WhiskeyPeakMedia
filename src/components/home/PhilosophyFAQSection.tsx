@@ -368,7 +368,7 @@ export default function PhilosophyFAQSection() {
               return (
                 <div
                   key={index}
-                  className="bg-[#161616] rounded-2xl overflow-hidden border border-transparent hover:border-[rgba(200,169,126,0.1)] transition"
+                  className="bg-[#161616]/75 backdrop-blur-md md:bg-[#161616] md:backdrop-blur-none rounded-2xl overflow-hidden border border-transparent hover:border-[rgba(200,169,126,0.1)] transition"
                 >
                   {/* Question Button */}
                   <button
