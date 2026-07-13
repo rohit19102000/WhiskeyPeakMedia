@@ -69,11 +69,11 @@ function TeamCard({
     <motion.div ref={cardRef} style={{ y }}>
       <div
         ref={imageRef}
-        className="relative h-[50vh] md:h-[60vh] w-full rounded-3xl overflow-hidden group"
+        className="relative h-[50vh] md:h-[60vh] w-full rounded-3xl overflow-hidden group transform-gpu"
       >
         {/* Offset decorative frame */}
         <div
-          className="absolute inset-0 border border-[rgba(200,169,126,0.15)] rounded-3xl translate-x-4 translate-y-4 transition-transform duration-500 ease-out group-hover:translate-x-6 group-hover:translate-y-6 pointer-events-none z-10"
+          className="absolute inset-0 border border-gold/15 rounded-3xl translate-x-4 translate-y-4 transition-transform duration-500 ease-out group-hover:translate-x-6 group-hover:translate-y-6 pointer-events-none z-10"
         />
 
         {/* Image */}
@@ -91,15 +91,15 @@ function TeamCard({
         {/* Info overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20">
           <h3
-            className="text-xl md:text-2xl font-bold text-[#F0EDE8] mb-1"
+            className="text-xl md:text-2xl font-bold text-foreground mb-1"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
             {member.name}
           </h3>
-          <p className="text-sm font-medium text-[#C8A97E] uppercase tracking-wider mb-3">
+          <p className="text-sm font-medium text-gold uppercase tracking-wider mb-3">
             {member.role}
           </p>
-          <p className="text-sm text-[#C8C4BC] leading-relaxed italic opacity-0 translate-y-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">
+          <p className="text-sm text-body leading-relaxed italic opacity-0 translate-y-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">
             &ldquo;{member.quote}&rdquo;
           </p>
         </div>
@@ -137,12 +137,12 @@ export default function TeamSection() {
     <section
       id="team"
       ref={sectionRef}
-      className="min-h-[120vh] bg-[#0A0A0A] text-[#F0EDE8] overflow-hidden flex items-center py-20 relative"
+      className="min-h-[120vh] bg-background text-foreground overflow-hidden flex items-center py-20 relative"
     >
       {/* Large background text */}
       <div
         ref={bgTextRef}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15vw] leading-none font-bold text-white/5 uppercase tracking-tighter whitespace-nowrap select-none pointer-events-none z-0"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15vw] leading-none font-bold text-white/5 uppercase tracking-tighter whitespace-nowrap select-none pointer-events-none z-0 transform-gpu"
       >
         OUR TEAM
       </div>
@@ -151,7 +151,7 @@ export default function TeamSection() {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12">
         {/* Section header */}
         <div className="mb-16 md:mb-24">
-          <span className="text-xs uppercase tracking-[0.3em] text-[#C8A97E] font-medium mb-4 block">
+          <span className="text-xs uppercase tracking-[0.3em] text-gold font-medium mb-4 block">
             The People
           </span>
           <h2

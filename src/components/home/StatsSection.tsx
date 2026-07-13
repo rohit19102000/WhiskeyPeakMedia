@@ -69,7 +69,7 @@ export default function StatsSection() {
   return (
     <section
       ref={ref}
-      className="py-24 bg-[#111111] border-y border-[rgba(255,255,255,0.06)]"
+      className="py-24 bg-surface border-y border-white/5"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0">
@@ -77,17 +77,17 @@ export default function StatsSection() {
             <div
               key={stat.label}
               className={`text-center ${
-                index > 0 ? "md:border-l md:border-[rgba(200,169,126,0.2)]" : ""
+                index > 0 ? "md:border-l md:border-gold/20" : ""
               }`}
             >
-              <div className="text-5xl md:text-6xl font-bold text-[#C8A97E] tabular-nums text-right md:text-center pr-4 md:pr-0">
+              <div className="text-5xl md:text-6xl font-bold text-gold tabular-nums text-right md:text-center pr-4 md:pr-0">
                 <AnimatedCounter
                   target={stat.num}
                   suffix={stat.suffix}
                   inView={isInView}
                 />
               </div>
-              <p className="text-sm text-[#888] mt-3 tracking-wide">
+              <p className="text-sm text-dim mt-3 tracking-wide">
                 {stat.label}
               </p>
             </div>

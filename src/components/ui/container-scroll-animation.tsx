@@ -28,9 +28,9 @@ export const ContainerScroll = ({
 
         <motion.div
           style={{ rotateX: rotate, scale }}
-          className="bg-[#161616] rounded-[32px] p-4 shadow-2xl"
+          className="bg-card rounded-[32px] p-4 shadow-2xl transform-gpu"
         >
-          <div className="bg-[#0A0A0A] rounded-2xl overflow-hidden">
+          <div className="bg-background rounded-2xl overflow-hidden">
             {children}
           </div>
         </motion.div>

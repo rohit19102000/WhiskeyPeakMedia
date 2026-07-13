@@ -66,23 +66,23 @@ export default function ServicesSection() {
     <section
       id="services"
       ref={sectionRef}
-      className="py-32 bg-[#0A0A0A]"
+      className="py-32 bg-background"
     >
       <div className="max-w-7xl mx-auto px-6">
         {/* ─── Header ─── */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
           <div>
-            <span className="text-[#C8A97E] uppercase tracking-[0.25em] text-sm font-medium">
+            <span className="text-gold uppercase tracking-[0.25em] text-sm font-medium">
               Our Expertise
             </span>
             <h2
-              className="text-4xl md:text-5xl font-bold text-[#F0EDE8] mt-4"
+              className="text-4xl md:text-5xl font-bold text-foreground mt-4"
               style={{ fontFamily: "var(--font-playfair)" }}
             >
               Beyond Inspiration.
             </h2>
           </div>
-          <p className="text-[#C8C4BC] max-w-md text-right text-base leading-relaxed">
+          <p className="text-body max-w-md text-right text-base leading-relaxed">
             We blend strategy, design, and technology to build digital
             experiences that elevate brands beyond the ordinary.
           </p>
@@ -96,7 +96,7 @@ export default function ServicesSection() {
               ref={(el) => {
                 cardsRef.current[i] = el;
               }}
-              className={`group relative overflow-hidden rounded-3xl bg-[#161616] h-96 md:h-auto ${service.className}`}
+              className={`group relative overflow-hidden rounded-3xl bg-card h-96 md:h-auto transform-gpu ${service.className}`}
             >
               {/* Background image */}
               <Image
@@ -113,12 +113,12 @@ export default function ServicesSection() {
               {/* Bottom gradient + text */}
               <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
                 <h3
-                  className="text-xl font-bold text-[#F0EDE8]"
+                  className="text-xl font-bold text-foreground"
                   style={{ fontFamily: "var(--font-playfair)" }}
                 >
                   {service.title}
                 </h3>
-                <p className="text-sm text-[#C8C4BC] mt-1 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+                <p className="text-sm text-body mt-1 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
                   {service.desc}
                 </p>
               </div>
@@ -126,7 +126,7 @@ export default function ServicesSection() {
               {/* Arrow button */}
               <div className="absolute top-4 right-4 opacity-0 translate-y-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">
                 <div className="w-10 h-10 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center">
-                  <ArrowUpRight className="w-5 h-5 text-[#F0EDE8]" />
+                  <ArrowUpRight className="w-5 h-5 text-foreground" />
                 </div>
               </div>
             </div>

@@ -35,12 +35,12 @@ function HoverWord({
     if (canHover) setIsHovered(false);
   };
 
-  // Lighter gold for hover: #FFE5B4
-  // Normal gold for special: #C8A97E
+  // Lighter gold for hover: var(--accent-gold-hover)
+  // Normal gold for special: var(--accent-gold)
   // Normal gray-white for regular: rgba(240, 237, 232, 0.65)
-  // Sublabel default color: text-[#C8A97E]/60
+  // Sublabel default color: text-gold/60
   let color = isSpecial
-    ? "#C8A97E"
+    ? "var(--accent-gold)"
     : isSublabel
     ? "rgba(200, 169, 126, 0.6)"
     : "rgba(240, 237, 232, 0.65)";
@@ -48,7 +48,7 @@ function HoverWord({
   let textShadow = "none";
 
   if (isHovered) {
-    color = "#E0C39C";
+    color = "var(--accent-gold-hover)";
     textShadow = "0 0 6px rgba(224, 195, 156, 0.55)";
   }
 
@@ -163,7 +163,7 @@ export default function PhilosophyFAQSection() {
       tl.to(
         stickyRef.current,
         {
-          backgroundColor: "#111111",
+          backgroundColor: "var(--bg-surface)",
           duration: 0.35,
           ease: "power1.inOut",
         },
@@ -217,7 +217,7 @@ export default function PhilosophyFAQSection() {
     <section
       id="philosophy"
       ref={containerRef}
-      className="relative w-full bg-[#0A0A0A] h-screen overflow-hidden"
+      className="relative w-full bg-background h-screen overflow-hidden"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -230,7 +230,7 @@ export default function PhilosophyFAQSection() {
 
       <div
         ref={stickyRef}
-        className="relative w-full h-full flex items-center justify-center bg-[#0A0A0A]"
+        className="relative w-full h-full flex items-center justify-center bg-background"
       >
         {/* ── BACKGROUND INFINITY SVG ── */}
         {/* Base Layer: Faint */}
@@ -268,7 +268,7 @@ export default function PhilosophyFAQSection() {
           <div className="absolute inset-0 flex items-center justify-center">
             <svg
               viewBox="0 0 100 50"
-              className="w-full max-w-[1850px] aspect-[100/50] text-[#C8A97E]/35"
+              className="w-full max-w-[1850px] aspect-[100/50] text-gold/35"
               xmlns="http://www.w3.org/2000/svg"
               style={{ filter: "url(#svg-glow)" }}
             >
@@ -294,7 +294,7 @@ export default function PhilosophyFAQSection() {
         {/* ── PHILOSOPHY CONTENT (absolute) ── */}
         <div
           ref={philosophyRef}
-          className="absolute max-w-4xl mx-auto px-6 w-full text-center z-10 pointer-events-auto"
+          className="absolute max-w-4xl mx-auto px-6 w-full text-center z-10 pointer-events-auto transform-gpu"
           style={{ willChange: "transform, opacity" }}
         >
           {/* Sublabel "Our Philosophy" */}
@@ -334,13 +334,13 @@ export default function PhilosophyFAQSection() {
             })}
           </h2>
 
-          <div className="w-px h-20 bg-[#C8A97E]/20 mx-auto mt-20" />
+          <div className="w-px h-20 bg-gold/20 mx-auto mt-20" />
         </div>
 
         {/* ── FAQ CONTENT (absolute) ── */}
         <div
           ref={faqRef}
-          className="absolute max-w-4xl mx-auto px-6 w-full opacity-0 pointer-events-none z-20 overflow-y-auto max-h-[85vh] py-8 no-scrollbar"
+          className="absolute max-w-4xl mx-auto px-6 w-full opacity-0 pointer-events-none z-20 overflow-y-auto max-h-[85vh] py-8 no-scrollbar transform-gpu"
           style={{
             willChange: "transform, opacity",
             msOverflowStyle: "none",
@@ -349,11 +349,11 @@ export default function PhilosophyFAQSection() {
         >
           {/* Header */}
           <div className="text-center mb-16">
-            <p className="text-xs uppercase tracking-[0.3em] text-[#C8A97E]/60 mb-6">
+            <p className="text-xs uppercase tracking-[0.3em] text-gold/60 mb-6">
               Common Questions
             </p>
             <h2
-              className="text-4xl md:text-5xl font-bold text-[#F0EDE8]"
+              className="text-4xl md:text-5xl font-bold text-foreground"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
               Everything You Need to Know
@@ -368,14 +368,14 @@ export default function PhilosophyFAQSection() {
               return (
                 <div
                   key={index}
-                  className="bg-[#161616]/75 backdrop-blur-md md:bg-[#161616] md:backdrop-blur-none rounded-2xl overflow-hidden border border-transparent hover:border-[rgba(200,169,126,0.1)] transition"
+                  className="bg-card/75 backdrop-blur-md md:bg-card md:backdrop-blur-none rounded-2xl overflow-hidden border border-transparent hover:border-gold/10 transition"
                 >
                   {/* Question Button */}
                   <button
                     onClick={() => toggleIndex(index)}
                     className="w-full flex items-center justify-between p-6 md:p-8 text-left cursor-pointer"
                   >
-                    <span className="text-base md:text-lg font-medium text-[#F0EDE8] pr-4">
+                    <span className="text-base md:text-lg font-medium text-foreground pr-4">
                       {faq.question}
                     </span>
 
@@ -383,22 +383,22 @@ export default function PhilosophyFAQSection() {
                       className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full border flex items-center justify-center transition-all duration-300"
                       style={{
                         borderColor: isOpen
-                          ? "#C8A97E"
-                          : "rgba(200,169,126,0.3)",
-                        backgroundColor: isOpen ? "#C8A97E" : "transparent",
+                          ? "var(--accent-gold)"
+                          : "rgba(200, 169, 126, 0.3)",
+                        backgroundColor: isOpen ? "var(--accent-gold)" : "transparent",
                       }}
                     >
                       {isOpen ? (
                         <Minus
                           size={16}
                           className="transition-colors duration-300"
-                          style={{ color: isOpen ? "#0A0A0A" : "#C8A97E" }}
+                          style={{ color: isOpen ? "var(--bg-deep)" : "var(--accent-gold)" }}
                         />
                       ) : (
                         <Plus
                           size={16}
                           className="transition-colors duration-300"
-                          style={{ color: "#C8A97E" }}
+                          style={{ color: "var(--accent-gold)" }}
                         />
                       )}
                     </span>
@@ -414,7 +414,7 @@ export default function PhilosophyFAQSection() {
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                         className="overflow-hidden"
                       >
-                        <div className="p-6 md:p-8 pt-0 text-sm md:text-base text-[#888] font-light leading-loose border-t border-[rgba(255,255,255,0.05)]">
+                        <div className="p-6 md:p-8 pt-0 text-sm md:text-base text-dim font-light leading-loose border-t border-white/5">
                           {faq.answer}
                         </div>
                       </motion.div>

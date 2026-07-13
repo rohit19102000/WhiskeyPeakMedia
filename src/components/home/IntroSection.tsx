@@ -32,7 +32,7 @@ export default function IntroSection() {
                 // Add a gold blinking cursor during typing
                 headingEl.innerHTML =
                   currentText +
-                  `<span class="text-[#C8A97E] animate-pulse">|</span>`;
+                  `<span class="text-gold animate-pulse">|</span>`;
 
                 // Remove the cursor after typing finishes
                 if (index === chars.length - 1) {
@@ -78,17 +78,17 @@ export default function IntroSection() {
   return (
     <section
       ref={containerRef}
-      className="intro-container py-32 px-6 md:px-20 bg-[#0A0A0A] text-[#F0EDE8] overflow-hidden"
+      className="intro-container py-32 px-6 md:px-20 bg-background text-foreground overflow-hidden"
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 md:gap-32 items-start">
         {/* Left Column */}
         <div className="md:w-1/3">
-          <p className="text-xs tracking-[0.4em] uppercase text-[#C8A97E] mb-6">
+          <p className="text-xs tracking-[0.4em] uppercase text-gold mb-6">
             Who We Are
           </p>
           <h2
             ref={headingRef}
-            className="text-4xl md:text-5xl font-bold leading-tight text-[#F0EDE8]"
+            className="text-4xl md:text-5xl font-bold leading-tight text-foreground"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
             Crafting Digital Excellence.
@@ -97,14 +97,14 @@ export default function IntroSection() {
 
         {/* Right Column */}
         <div className="md:w-2/3 max-w-2xl flex flex-col gap-8">
-          <p className="reveal-text text-xl md:text-2xl font-light text-[#C8C4BC] leading-relaxed">
+          <p className="reveal-text text-xl md:text-2xl font-light text-body leading-relaxed">
             We are a premium web design agency specializing in high-converting
             websites that blend stunning aesthetics with strategic functionality.
             Every pixel is placed with purpose, every animation crafted to
             captivate.
           </p>
 
-          <p className="reveal-text text-base text-[#888] leading-relaxed">
+          <p className="reveal-text text-base text-dim leading-relaxed">
             From concept to launch, we partner with ambitious brands to build
             digital experiences that stand apart. Our approach combines
             data-driven strategy with award-winning design to deliver results

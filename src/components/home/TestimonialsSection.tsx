@@ -11,15 +11,15 @@ const thirdColumn = TESTIMONIALS.slice(8, 12);
 
 export default function TestimonialsSection() {
   return (
-    <section className="bg-[#0A0A0A] text-[#F0EDE8]">
+    <section className="bg-background text-foreground">
       <ContainerScroll
         titleComponent={
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-[#C8A97E] font-medium mb-4">
+            <p className="text-sm uppercase tracking-[0.3em] text-gold font-medium mb-4">
               Real feedback from real partnerships
             </p>
             <h2
-              className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-[#F0EDE8] to-[#888]"
+              className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-foreground to-dim"
               style={{ fontFamily: "var(--font-playfair)" }}
             >
               Client Stories

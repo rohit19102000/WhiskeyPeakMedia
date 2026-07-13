@@ -378,13 +378,13 @@ export default function ProcessSection() {
         .process-section {
           position: relative;
           height: 100vh;
-          background: #0A0A0A;
+          background: var(--bg-deep);
         }
         .process-sticky {
           position: relative;
           height: 100vh;
           overflow: hidden;
-          background: #0A0A0A;
+          background: var(--bg-deep);
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -413,12 +413,12 @@ export default function ProcessSection() {
           font-size: 10px;
           letter-spacing: 0.3em;
           text-transform: uppercase;
-          color: #c8a97e;
+          color: var(--accent-gold);
         }
         .process-heading-title {
           font-family: var(--font-playfair), serif;
           font-size: 14px;
-          color: #555;
+          color: var(--dim-text);
           letter-spacing: 0.1em;
         }
 
@@ -438,7 +438,7 @@ export default function ProcessSection() {
           inset: 0;
           border-radius: 40px;
           overflow: hidden;
-          background: #161616;
+          background: var(--bg-card);
           box-shadow: 0 45px 80px -20px rgba(0, 0, 0, 0.85);
           border: 1px solid rgba(255, 255, 255, 0.03);
           will-change: transform, opacity;
@@ -461,27 +461,27 @@ export default function ProcessSection() {
           font-size: 12px;
           letter-spacing: 0.25em;
           text-transform: uppercase;
-          color: #c8a97e;
+          color: var(--accent-gold);
         }
         .process-card-title {
           font-family: var(--font-playfair), serif;
           font-size: 64px;
           font-weight: 700;
-          color: #F0EDE8;
+          color: var(--text-primary);
           line-height: 1.1;
         }
         .process-card-body {
           font-family: var(--font-inter), sans-serif;
           font-size: 19px;
           line-height: 1.75;
-          color: #C8C4BC;
+          color: var(--text-body);
           max-w: 800px;
         }
         .process-card-detail {
           font-family: var(--font-inter), sans-serif;
           font-size: 14px;
           line-height: 1.6;
-          color: #777;
+          color: var(--dim-text);
           max-w: 700px;
           border-left: 2px solid rgba(200, 169, 126, 0.25);
           padding-left: 20px;
@@ -491,7 +491,7 @@ export default function ProcessSection() {
         .process-wipe {
           position: absolute;
           inset: 0;
-          background: #0A0A0A;
+          background: var(--bg-deep);
           z-index: 25;
           opacity: 0;
           pointer-events: none;

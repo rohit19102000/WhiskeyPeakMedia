@@ -27,31 +27,31 @@ export const TestimonialsColumn = ({
           repeat: Infinity,
           ease: "linear",
         }}
-        className="flex flex-col gap-6 pb-6"
+        className="flex flex-col gap-6 pb-6 transform-gpu"
       >
         {[...Array(2)].map((_, loopIndex) =>
           testimonials.map((t, i) => (
             <div
               key={`${loopIndex}-${i}`}
-              className="rounded-3xl border border-[rgba(200,169,126,0.15)] p-6 bg-[#161616] shadow-lg max-w-sm"
+              className="rounded-3xl border border-gold/15 p-6 bg-card shadow-lg max-w-sm"
             >
-              <p className="text-sm leading-relaxed text-[#C8C4BC] font-medium">
+              <p className="text-sm leading-relaxed text-body font-medium">
                 &ldquo;{t.text}&rdquo;
               </p>
               <div className="mt-4">
                 {t.author_name && (
-                  <div className="font-bold text-[#F0EDE8] text-sm">
+                  <div className="font-bold text-foreground text-sm">
                     {t.author_name}
                   </div>
                 )}
                 {t.company && (
-                  <div className="text-xs text-[#C8A97E] font-medium mt-0.5">
+                  <div className="text-xs text-gold font-medium mt-0.5">
                     {t.company}
                   </div>
                 )}
                 {t.rating && (
-                  <div className="text-xs text-[#888] font-medium flex items-center gap-1 mt-1">
-                    {t.rating} <span className="text-[#C8A97E]">★</span>
+                  <div className="text-xs text-dim font-medium flex items-center gap-1 mt-1">
+                    {t.rating} <span className="text-gold">★</span>
                   </div>
                 )}
               </div>

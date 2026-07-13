@@ -69,11 +69,11 @@ export default function Footer() {
   return (
     <footer
       ref={footerRef}
-      className="relative bg-[#0A0A0A] border-t border-[rgba(255,255,255,0.06)]"
+      className="relative bg-background border-t border-white/5"
     >
       <div ref={contentRef} className="mx-auto max-w-[1400px] px-6 md:px-10 pt-20 pb-10">
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-0 pb-16 border-b border-[rgba(255,255,255,0.06)]">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-0 pb-16 border-b border-white/5">
           {/* Brand Column */}
           <div className="md:col-span-5">
             <div className="flex flex-col leading-none mb-6">
@@ -84,14 +84,14 @@ export default function Footer() {
                 WHISKEY PEAK
               </span>
               <span
-                className="text-[10px] italic tracking-[0.08em] mt-[2px] text-[#C8A97E]/70"
+                className="text-[10px] italic tracking-[0.08em] mt-[2px] text-gold/70"
                 style={{ fontFamily: "var(--font-playfair), serif" }}
               >
                 Media
               </span>
             </div>
             <p
-              className="text-[#C8C4BC] text-[14px] leading-[1.8] max-w-sm"
+              className="text-body text-[14px] leading-[1.8] max-w-sm"
               style={{ fontFamily: "var(--font-inter), sans-serif" }}
             >
               We craft digital experiences that elevate brands beyond the
@@ -106,7 +106,7 @@ export default function Footer() {
           {/* Studio Links */}
           <div className="md:col-span-2">
             <h4
-              className="text-[11px] uppercase tracking-[0.2em] text-[#C8A97E] font-medium mb-6"
+              className="text-[11px] uppercase tracking-[0.2em] text-gold font-medium mb-6"
               style={{ fontFamily: "var(--font-inter), sans-serif" }}
             >
               Studio
@@ -117,7 +117,7 @@ export default function Footer() {
                   <Link
                     href={link.href}
                     onClick={(e) => handleSmoothScroll(e, link.href)}
-                    className="text-[#C8C4BC] text-[14px] hover:text-[#F0EDE8] transition-colors duration-300"
+                    className="text-body text-[14px] hover:text-foreground transition-colors duration-300"
                     style={{ fontFamily: "var(--font-inter), sans-serif" }}
                   >
                     {link.label}
@@ -130,7 +130,7 @@ export default function Footer() {
           {/* Connect Links */}
           <div className="md:col-span-2">
             <h4
-              className="text-[11px] uppercase tracking-[0.2em] text-[#C8A97E] font-medium mb-6"
+              className="text-[11px] uppercase tracking-[0.2em] text-gold font-medium mb-6"
               style={{ fontFamily: "var(--font-inter), sans-serif" }}
             >
               Connect
@@ -142,7 +142,7 @@ export default function Footer() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#C8C4BC] text-[14px] hover:text-[#F0EDE8] transition-colors duration-300"
+                    className="text-body text-[14px] hover:text-foreground transition-colors duration-300"
                     style={{ fontFamily: "var(--font-inter), sans-serif" }}
                   >
                     {link.label}
@@ -155,7 +155,7 @@ export default function Footer() {
           {/* Direct Contact */}
           <div className="md:col-span-2">
             <h4
-              className="text-[11px] uppercase tracking-[0.2em] text-[#C8A97E] font-medium mb-6"
+              className="text-[11px] uppercase tracking-[0.2em] text-gold font-medium mb-6"
               style={{ fontFamily: "var(--font-inter), sans-serif" }}
             >
               Direct
@@ -164,7 +164,7 @@ export default function Footer() {
               <li>
                 <a
                   href="tel:+919876543210"
-                  className="text-[#C8C4BC] text-[14px] hover:text-[#F0EDE8] transition-colors duration-300"
+                  className="text-body text-[14px] hover:text-foreground transition-colors duration-300"
                   style={{ fontFamily: "var(--font-inter), sans-serif" }}
                 >
                   +91 98765 43210
@@ -173,7 +173,7 @@ export default function Footer() {
               <li>
                 <a
                   href="mailto:hello@whiskeypeak.in"
-                  className="text-[#C8C4BC] text-[14px] hover:text-[#F0EDE8] transition-colors duration-300"
+                  className="text-body text-[14px] hover:text-foreground transition-colors duration-300"
                   style={{ fontFamily: "var(--font-inter), sans-serif" }}
                 >
                   hello@whiskeypeak.in
@@ -186,23 +186,23 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8">
           <p
-            className="text-[#C8C4BC]/50 text-[12px] tracking-[0.05em]"
+            className="text-body/50 text-[12px] tracking-[0.05em]"
             style={{ fontFamily: "var(--font-inter), sans-serif" }}
           >
             © {currentYear} Whiskey Peak Media. All rights reserved.
           </p>
           <p
-            className="text-[#C8C4BC]/40 text-[12px] tracking-[0.1em] uppercase"
+            className="text-body/40 text-[12px] tracking-[0.1em] uppercase"
             style={{ fontFamily: "var(--font-inter), sans-serif" }}
           >
             Design · Develop · Deploy
           </p>
           <p
-            className="text-[#C8C4BC]/40 text-[12px] tracking-[0.05em]"
+            className="text-body/40 text-[12px] tracking-[0.05em]"
             style={{ fontFamily: "var(--font-inter), sans-serif" }}
           >
             Site by{" "}
-            <span className="text-[#C8A97E]/60 hover:text-[#C8A97E] transition-colors duration-300">
+            <span className="text-gold/60 hover:text-gold transition-colors duration-300">
               Saurabh Kedar
             </span>
           </p>

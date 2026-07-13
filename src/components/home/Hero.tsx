@@ -82,14 +82,14 @@ export default function Hero() {
       <style>{`
         /* Gold metallic reflection sweep */
         .hero-title-shimmer {
-          color: #C8A97E;
+          color: var(--accent-gold);
           background: linear-gradient(
             to right,
-            #F0EDE8 15%,
-            #C8A97E 35%,
+            var(--text-primary) 15%,
+            var(--accent-gold) 35%,
             #FFFFFF 50%,
-            #C8A97E 65%,
-            #F0EDE8 85%
+            var(--accent-gold) 65%,
+            var(--text-primary) 85%
           );
           background-size: 200% auto;
           -webkit-background-clip: text;
@@ -142,7 +142,7 @@ export default function Hero() {
             style={{ perspective: "1000px" }}
           >
             {/* Label */}
-            <p className="hero-label text-xs md:text-sm tracking-[0.4em] uppercase text-[#C8A97E]">
+            <p className="hero-label text-xs md:text-sm tracking-[0.4em] uppercase text-gold">
               Premium Web Design Agency
             </p>
 
@@ -207,7 +207,7 @@ export default function Hero() {
                 duration: 1.5,
                 ease: "linear",
               }}
-              className="w-full h-1/2 bg-[#C8A97E]"
+              className="w-full h-1/2 bg-gold"
             />
           </div>
         </motion.div>

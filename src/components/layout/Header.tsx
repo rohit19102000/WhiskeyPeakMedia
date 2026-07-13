@@ -72,7 +72,7 @@ export default function Header() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
           scrolled
-            ? "bg-white/5 backdrop-blur-md py-4 border-b border-[rgba(255,255,255,0.06)]"
+            ? "bg-white/5 backdrop-blur-md py-4 border-b border-white/5"
             : "bg-transparent py-6"
         )}
       >
@@ -102,14 +102,15 @@ export default function Header() {
                 height="70"
                 rx="8"
                 fill="none"
-                stroke="rgba(200, 169, 126, 0.25)"
+                stroke="var(--accent-gold)"
+                strokeOpacity="0.25"
                 strokeWidth="1.5"
                 transform="rotate(45 50 50)"
               />
               <path
                 d="M 24 67 L 37 28 L 50 63 L 63 28 L 76 67"
                 fill="none"
-                stroke="#F0EDE8"
+                stroke="var(--text-primary)"
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -118,7 +119,7 @@ export default function Header() {
               <path
                 d="M 24 33 L 37 72 L 50 37 L 63 72 L 76 33"
                 fill="none"
-                stroke="#C8A97E"
+                stroke="var(--accent-gold)"
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -138,7 +139,7 @@ export default function Header() {
               <span
                 className={cn(
                   "text-[10px] italic tracking-[0.08em] mt-[2px] transition-colors duration-500",
-                  scrolled ? "text-[#C8A97E]" : "text-[#C8A97E]/70"
+                  scrolled ? "text-gold" : "text-gold/70"
                 )}
                 style={{ fontFamily: "var(--font-playfair), serif" }}
               >
@@ -199,7 +200,7 @@ export default function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="fixed inset-0 z-40 bg-[#0A0A0A]/98 backdrop-blur-xl flex flex-col items-center justify-center lg:hidden"
+            className="fixed inset-0 z-40 bg-background/98 backdrop-blur-xl flex flex-col items-center justify-center lg:hidden"
           >
             <nav className="flex flex-col items-center gap-8">
               {NAV_ITEMS.map((item, i) => (
@@ -232,7 +233,7 @@ export default function Header() {
                   ease: [0.16, 1, 0.3, 1],
                 }}
                 onClick={handleCtaClick}
-                className="mt-4 px-10 py-3.5 bg-[#C8A97E] text-[#0A0A0A] text-sm uppercase tracking-[0.15em] font-semibold rounded-sm hover:bg-[#D4B88F] transition-colors duration-300 cursor-pointer"
+                className="mt-4 px-10 py-3.5 bg-gold text-background text-sm uppercase tracking-[0.15em] font-semibold rounded-sm hover:bg-gold-hover transition-colors duration-300 cursor-pointer"
                 style={{ fontFamily: "var(--font-inter), sans-serif" }}
               >
                 Start Project
