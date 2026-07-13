@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useLayoutEffect } from "react";
+import React, { useRef, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
@@ -12,6 +12,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function PortfolioSection() {
   const triggerRef = useRef<HTMLElement>(null);
   const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const [clickedCard, setClickedCard] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     const trigger = triggerRef.current;
@@ -50,71 +51,140 @@ export default function PortfolioSection() {
           const topY = "8vh";
           const bottomY = isDesktop ? "54vh" : "52vh";
           const exitX = "120vw"; // Offscreen right
+          const startY = "-100vh"; // Offscreen top
 
           cards.forEach((card, i) => {
-            // Entrance Position: Left Top -> Left Bottom (straight down, constant X, linear ease)
-            tl.fromTo(
-              card,
-              {
-                x: leftX,
-                y: topY,
-                scale: 0.9,
-                rotate: 0,
-              },
-              {
-                x: leftX,
-                y: bottomY,
-                scale: 1,
-                rotate: 0,
-                duration: 1.0,
-                ease: "none",
-              },
-              i * 0.8
-            );
+            if (isDesktop) {
+              // DESKTOP ANIMATION: Left Top -> Left Bottom -> Right Bottom
+              // Entrance Position: Left Top -> Left Bottom (straight down, constant X, linear ease)
+              tl.fromTo(
+                card,
+                {
+                  x: leftX,
+                  y: topY,
+                  scale: 0.9,
+                  rotate: 0,
+                },
+                {
+                  x: leftX,
+                  y: bottomY,
+                  scale: 1,
+                  rotate: 0,
+                  duration: 1.0,
+                  ease: "none",
+                },
+                i * 0.8
+              );
 
-            // Entrance Opacity: Quick fade in (0 -> 1 over 0.3s) at the start of descent
-            tl.fromTo(
-              card,
-              { opacity: 0 },
-              {
-                opacity: 1,
-                duration: 0.3,
-                ease: "none",
-              },
-              i * 0.8
-            );
+              // Entrance Opacity: Quick fade in (0 -> 1 over 0.3s) at the start of descent
+              tl.fromTo(
+                card,
+                { opacity: 0 },
+                {
+                  opacity: 1,
+                  duration: 0.3,
+                  ease: "none",
+                },
+                i * 0.8
+              );
 
-            // Exit Position: Left Bottom -> Right Bottom / offscreen right (straight right, constant Y, linear ease)
-            tl.fromTo(
-              card,
-              {
-                x: leftX,
-                y: bottomY,
-                scale: 1,
-                rotate: 0,
-              },
-              {
-                x: exitX,
-                y: bottomY,
-                scale: 0.9,
-                rotate: 0,
-                duration: 1.0,
-                ease: "none",
-              },
-              i * 0.8 + 1.2
-            );
+              // Exit Position: Left Bottom -> Right Bottom / offscreen right (straight right, constant Y, linear ease)
+              tl.fromTo(
+                card,
+                {
+                  x: leftX,
+                  y: bottomY,
+                  scale: 1,
+                  rotate: 0,
+                },
+                {
+                  x: exitX,
+                  y: bottomY,
+                  scale: 0.9,
+                  rotate: 0,
+                  duration: 1.0,
+                  ease: "none",
+                },
+                i * 0.8 + 1.2
+              );
 
-            // Exit Opacity: Quick fade out (1 -> 0 over 0.3s) at the end of the slide right
-            tl.fromTo(
-              card,
-              { opacity: 1 },
-              {
-                opacity: 0,
-                duration: 0.3,
-                ease: "none",
-              },
-              i * 0.8 + 1.9 // Starts fading out in the final 0.3s of the 1.0s exit phase
-            );
+              // Exit Opacity: Quick fade out (1 -> 0 over 0.3s) at the end of the slide right
+              tl.fromTo(
+                card,
+                { opacity: 1 },
+                {
+                  opacity: 0,
+                  duration: 0.3,
+                  ease: "none",
+                },
+                i * 0.8 + 1.9 // Starts fading out in the final 0.3s of the 1.0s exit phase
+              );
+            } else {
+              // MOBILE ANIMATION: Right Bottom -> Left Bottom -> Left Top (exit offscreen top)
+              // Entrance Position: Right Bottom -> Left Bottom (slides straight left, constant Y)
+              tl.fromTo(
+                card,
+                {
+                  x: exitX,
+                  y: bottomY,
+                  scale: 0.9,
+                  rotate: 0,
+                },
+                {
+                  x: leftX,
+                  y: bottomY,
+                  scale: 1,
+                  rotate: 0,
+                  duration: 1.0,
+                  ease: "none",
+                },
+                i * 0.8
+              );
+
+              // Entrance Opacity: Fades in to 100% exactly once it reaches Left Bottom (midpoint/center point)
+              tl.fromTo(
+                card,
+                { opacity: 0 },
+                {
+                  opacity: 1,
+                  duration: 1.0,
+                  ease: "none",
+                },
+                i * 0.8
+              );
+
+              // Exit Position: Left Bottom -> Left Top / offscreen top (slides straight up, constant X)
+              tl.fromTo(
+                card,
+                {
+                  x: leftX,
+                  y: bottomY,
+                  scale: 1,
+                  rotate: 0,
+                },
+                {
+                  x: leftX,
+                  y: startY,
+                  scale: 0.9,
+                  rotate: 0,
+                  duration: 1.0,
+                  ease: "none",
+                },
+                i * 0.8 + 1.2
+              );
+
+              // Exit Opacity: Fades out completely as it moves up
+              tl.fromTo(
+                card,
+                { opacity: 1 },
+                {
+                  opacity: 0,
+                  duration: 1.0,
+                  ease: "none",
+                },
+                i * 0.8 + 1.2
+              );
+            }
           });
         }
       );
@@ -166,7 +236,14 @@ export default function PortfolioSection() {
             ref={(el) => {
               itemsRef.current[i] = el;
             }}
-            className="absolute w-[68vw] h-[34vh] md:w-[26vw] md:h-[38vh] rounded-3xl overflow-hidden group grayscale hover:grayscale-0 transition-[filter,opacity] duration-700 cursor-pointer transform-gpu pointer-events-auto shadow-2xl border border-white/5"
+            className={`absolute w-[68vw] h-[34vh] md:w-[26vw] md:h-[38vh] rounded-3xl overflow-hidden group transition-[filter,opacity] duration-700 cursor-pointer transform-gpu pointer-events-auto shadow-2xl border border-white/5 ${
+              clickedCard === i ? "grayscale-0" : "grayscale md:hover:grayscale-0"
+            }`}
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                setClickedCard(clickedCard === i ? null : i);
+              }
+            }}
             style={{
               left: 0,
               top: 0,
