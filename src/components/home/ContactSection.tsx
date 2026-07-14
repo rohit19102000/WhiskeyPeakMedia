@@ -64,6 +64,13 @@ export default function ContactSection() {
     const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "";
     const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "";
 
+    // Check if EmailJS environment variables are configured.
+    // This is intentional and will auto-activate once real EmailJS credentials are added in .env.local
+    if (!serviceId || !templateId || !publicKey) {
+      setStatus("idle");
+      return;
+    }
+
     try {
       await emailjs.send(serviceId, templateId, {
         from_name: formData.name,
