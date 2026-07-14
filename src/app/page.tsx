@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Hero from "@/components/home/Hero";
 import IntroSection from "@/components/home/IntroSection";
-import ServicesSection from "@/components/home/ServicesSection";
-import PortfolioSection from "@/components/home/PortfolioSection";
-import TextRevealSection from "@/components/home/TextRevealSection";
-import ProcessSection from "@/components/home/ProcessSection";
-import TeamSection from "@/components/home/TeamSection";
-import StatsSection from "@/components/home/StatsSection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
-import PhilosophyFAQSection from "@/components/home/PhilosophyFAQSection";
-import ContactSection from "@/components/home/ContactSection";
+
+const ServicesSection = dynamic(() => import("@/components/home/ServicesSection"));
+const PortfolioSection = dynamic(() => import("@/components/home/PortfolioSection"));
+const TextRevealSection = dynamic(() => import("@/components/home/TextRevealSection"));
+const ProcessSection = dynamic(() => import("@/components/home/ProcessSection"));
+const TeamSection = dynamic(() => import("@/components/home/TeamSection"));
+const StatsSection = dynamic(() => import("@/components/home/StatsSection"));
+const TestimonialsSection = dynamic(() => import("@/components/home/TestimonialsSection"));
+const PhilosophyFAQSection = dynamic(() => import("@/components/home/PhilosophyFAQSection"));
+const ContactSection = dynamic(() => import("@/components/home/ContactSection"));
 
 export const metadata: Metadata = {
   title: "Whiskey Peak Media | Premium Web Design Agency",

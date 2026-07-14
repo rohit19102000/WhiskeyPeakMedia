@@ -1,7 +1,32 @@
 "use client";
 
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { useInView } from "motion/react";
+
+function useIntersectionObserver(
+  ref: React.RefObject<HTMLElement | null>,
+  options?: IntersectionObserverInit
+) {
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsInView(true);
+        observer.unobserve(el);
+      }
+    }, options);
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+    };
+  }, [ref, options]);
+
+  return isInView;
+}
 
 const STATS = [
   { num: 150, suffix: "+", label: "Projects Delivered" },
@@ -64,7 +89,7 @@ function AnimatedCounter({
 
 export default function StatsSection() {
   const ref = useRef<HTMLElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.4 });
+  const isInView = useIntersectionObserver(ref, { threshold: 0.2 });
 
   return (
     <section

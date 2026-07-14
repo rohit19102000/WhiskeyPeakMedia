@@ -373,6 +373,9 @@ export default function PhilosophyFAQSection() {
                   {/* Question Button */}
                   <button
                     onClick={() => toggleIndex(index)}
+                    aria-expanded={isOpen}
+                    aria-controls={`philosophy-faq-answer-${index}`}
+                    id={`philosophy-faq-question-${index}`}
                     className="w-full flex items-center justify-between p-6 md:p-8 text-left cursor-pointer"
                   >
                     <span className="text-base md:text-lg font-medium text-foreground pr-4">
@@ -408,6 +411,9 @@ export default function PhilosophyFAQSection() {
                   <AnimatePresence>
                     {isOpen && (
                       <motion.div
+                        id={`philosophy-faq-answer-${index}`}
+                        role="region"
+                        aria-labelledby={`philosophy-faq-question-${index}`}
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}

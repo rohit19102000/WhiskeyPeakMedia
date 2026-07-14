@@ -38,9 +38,12 @@ export default function FAQSection() {
                 key={index}
                 className="bg-[#161616] rounded-2xl overflow-hidden border border-transparent hover:border-[rgba(200,169,126,0.1)] transition"
               >
-                {/* Question Button */}
+                 {/* Question Button */}
                 <button
                   onClick={() => toggleIndex(index)}
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${index}`}
+                  id={`faq-question-${index}`}
                   className="w-full flex items-center justify-between p-8 text-left cursor-pointer"
                 >
                   <span className="text-lg md:text-xl font-medium text-[#F0EDE8] pr-4">
@@ -78,6 +81,9 @@ export default function FAQSection() {
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div
+                      id={`faq-answer-${index}`}
+                      role="region"
+                      aria-labelledby={`faq-question-${index}`}
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}

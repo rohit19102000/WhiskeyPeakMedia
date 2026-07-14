@@ -555,7 +555,7 @@ export default function ProcessSection() {
                   src={step.img}
                   alt={step.title}
                   fill
-                  unoptimized
+                  sizes="(max-width: 1500px) 92vw, 1500px"
                   className="object-cover"
                 />
 

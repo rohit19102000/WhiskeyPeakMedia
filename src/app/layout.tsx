@@ -5,10 +5,12 @@ import SmoothScroll from "@/components/ui/SmoothScroll";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Preloader from "@/components/ui/Preloader";
+import { PRIMARY_EMAIL, PRIMARY_PHONE, SITE_URL } from "@/data/constants";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const playfair = Playfair_Display({
@@ -16,6 +18,7 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -36,16 +39,25 @@ export const metadata: Metadata = {
     title: "Whiskey Peak Media | Premium Web Design Agency",
     description:
       "Premium website design & development with cutting-edge scroll animations.",
-    url: "https://whiskeypeak.in",
+    url: SITE_URL,
     siteName: "Whiskey Peak Media",
     locale: "en_IN",
     type: "website",
+    images: [
+      {
+        url: `${SITE_URL}/images/hero-bg.png`,
+        width: 1200,
+        height: 630,
+        alt: "Whiskey Peak Media Hero Background",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Whiskey Peak Media | Premium Web Design Agency",
     description:
       "Premium website design & development with cutting-edge scroll animations.",
+    images: [`${SITE_URL}/images/hero-bg.png`],
   },
 };
 
@@ -56,22 +68,31 @@ export default function RootLayout({
 }>) {
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "LocalBusiness",
     name: "Whiskey Peak Media",
-    url: "https://whiskeypeak.in",
-    description:
-      "Premium web design agency specializing in motion-driven digital experiences.",
+    image: `${SITE_URL}/images/hero-bg.png`,
+    url: SITE_URL,
+    telephone: PRIMARY_PHONE,
+    email: PRIMARY_EMAIL,
+    priceRange: "$$$",
     address: {
       "@type": "PostalAddress",
+      streetAddress: "Andheri West",
       addressLocality: "Mumbai",
       addressRegion: "Maharashtra",
+      postalCode: "400053",
       addressCountry: "IN",
     },
-    contactPoint: {
-      "@type": "ContactPoint",
-      email: "hello@whiskeypeak.in",
-      contactType: "customer service",
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 19.1363,
+      longitude: 72.8277,
     },
+    sameAs: [
+      "https://instagram.com/whiskeypeakmedia",
+      "https://twitter.com/whiskeypeakmedia",
+      "https://linkedin.com/company/whiskeypeakmedia",
+    ],
   };
 
   return (

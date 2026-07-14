@@ -7,6 +7,7 @@ import emailjs from "@emailjs/browser";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Button from "@/components/ui/Button";
+import { PRIMARY_EMAIL, PRIMARY_PHONE } from "@/data/constants";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,8 +20,10 @@ export default function ContactSection() {
     name: "",
     email: "",
     message: "",
+    website: "", // Honeypot field
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -30,6 +33,31 @@ export default function ContactSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+
+    // 1. Honeypot check
+    if (formData.website) {
+      // Quietly succeed to fool bots
+      setStatus("success");
+      setFormData({ name: "", email: "", message: "", website: "" });
+      return;
+    }
+
+    // 2. Client-side validation
+    if (formData.name.trim().length < 2) {
+      setValidationError("Please enter a valid name (at least 2 characters).");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setValidationError("Please enter a valid email address.");
+      return;
+    }
+    if (formData.message.trim().length < 10) {
+      setValidationError("Please enter a project description (at least 10 characters).");
+      return;
+    }
+
     setStatus("loading");
 
     const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "";
@@ -43,7 +71,7 @@ export default function ContactSection() {
         message: formData.message,
       }, publicKey);
       setStatus("success");
-      setFormData({ name: "", email: "", message: "" });
+      setFormData({ name: "", email: "", message: "", website: "" });
     } catch {
       setStatus("error");
       setTimeout(() => setStatus("idle"), 3000);
@@ -52,7 +80,8 @@ export default function ContactSection() {
 
   const resetForm = () => {
     setStatus("idle");
-    setFormData({ name: "", email: "", message: "" });
+    setValidationError(null);
+    setFormData({ name: "", email: "", message: "", website: "" });
   };
 
   // GSAP entrance animations
@@ -136,16 +165,16 @@ export default function ContactSection() {
                 </h3>
                 <div className="space-y-2">
                   <a
-                    href="tel:+919876543210"
+                    href={`tel:${PRIMARY_PHONE.replace(/\s+/g, "")}`}
                     className="block text-[#C8C4BC] font-light hover:text-[#F0EDE8] transition-colors duration-300"
                   >
-                    +91 98765 43210
+                    {PRIMARY_PHONE}
                   </a>
                   <a
-                    href="mailto:hello@whiskeypeakmedia.com"
+                    href={`mailto:${PRIMARY_EMAIL}`}
                     className="block text-[#C8C4BC] font-light hover:text-[#F0EDE8] transition-colors duration-300"
                   >
-                    hello@whiskeypeakmedia.com
+                    {PRIMARY_EMAIL}
                   </a>
                 </div>
               </div>
@@ -195,6 +224,18 @@ export default function ContactSection() {
                     onSubmit={handleSubmit}
                     className="space-y-6"
                   >
+                    {/* Honeypot field (hidden from screen readers and visual layouts) */}
+                    <div className="hidden" aria-hidden="true">
+                      <input
+                        type="text"
+                        name="website"
+                        value={formData.website}
+                        onChange={handleChange}
+                        tabIndex={-1}
+                        autoComplete="off"
+                      />
+                    </div>
+
                     <div>
                       <label
                         htmlFor="name"
@@ -251,6 +292,12 @@ export default function ContactSection() {
                         className={`${inputClasses} resize-none`}
                       />
                     </div>
+
+                    {validationError && (
+                      <p className="text-[#E8653A] text-sm">
+                        {validationError}
+                      </p>
+                    )}
 
                     {status === "error" && (
                       <p className="text-[#E8653A] text-sm">

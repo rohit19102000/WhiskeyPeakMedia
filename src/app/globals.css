@@ -92,3 +92,9 @@ html.lenis, html.lenis body {
   text-transform: uppercase;
   color: var(--accent-gold);
 }
+
+/* Accessibility Focus States for Keyboard Navigation (excluding inputs/textareas) */
+*:not(input):not(textarea):focus-visible {
+  outline: 2px solid var(--accent-gold) !important;
+  outline-offset: 4px !important;
+}

@@ -256,7 +256,7 @@ export default function PortfolioSection() {
               src={project.image}
               alt={project.title}
               fill
-              unoptimized
+              sizes="(max-width: 768px) 68vw, 26vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
             />
 

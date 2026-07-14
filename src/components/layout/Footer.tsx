@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { PRIMARY_EMAIL, PRIMARY_PHONE } from "@/data/constants";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -163,20 +164,20 @@ export default function Footer() {
             <ul className="flex flex-col gap-4">
               <li>
                 <a
-                  href="tel:+919876543210"
+                  href={`tel:${PRIMARY_PHONE.replace(/\s+/g, "")}`}
                   className="text-body text-[14px] hover:text-foreground transition-colors duration-300"
                   style={{ fontFamily: "var(--font-inter), sans-serif" }}
                 >
-                  +91 98765 43210
+                  {PRIMARY_PHONE}
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:hello@whiskeypeak.in"
+                  href={`mailto:${PRIMARY_EMAIL}`}
                   className="text-body text-[14px] hover:text-foreground transition-colors duration-300"
                   style={{ fontFamily: "var(--font-inter), sans-serif" }}
                 >
-                  hello@whiskeypeak.in
+                  {PRIMARY_EMAIL}
                 </a>
               </li>
             </ul>

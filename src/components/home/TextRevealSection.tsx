@@ -71,7 +71,7 @@ export default function TextRevealSection() {
             src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000"
             alt="Digital craft background"
             fill
-            unoptimized
+            sizes="100vw"
             style={{ objectFit: "cover", opacity: 0.3 }}
           />
         </div>

@@ -81,7 +81,7 @@ function TeamCard({
           src={member.image}
           alt={member.name}
           fill
-          unoptimized
+          sizes="(max-width: 768px) 90vw, (max-width: 1200px) 33vw, 400px"
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
