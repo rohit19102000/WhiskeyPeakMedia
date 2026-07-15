@@ -11,25 +11,35 @@ gsap.registerPlugin(ScrollTrigger);
 
 const LAST_INDEX = PORTFOLIO_PROJECTS.length - 1;
 
-// ── Phase 2 scroll-speed math ────────────────────────────────────────────────
+// ── Phase 2A/2B scroll-speed math ───────────────────────────────────────────
 // With scrub the timeline maps 0→end proportionally to scroll 0→pinLength.
 // To keep cards 0–4 at exactly the same scroll speed as before, we extend
 // the pin proportionally so each timeline unit still covers the same vh.
 //
-//   origTlDuration  = last exit end with 6 full-exit cards = (n-1)*0.8 + 2.2
-//   lastCardArrival = when card 5 finishes its entrance    = 5*0.8 + 1.0 = 5.0
-//   phase2Duration  = timeline units for the DC transition = 2.0
-//   newTlDuration   = lastCardArrival + phase2Duration      = 7.0
-//   origPinPct      = n * 80  (vh units as %)              = 480
-//   newPinPct       = origPinPct × (newTlDuration / origTlDuration) ≈ 542
+//   origTlDuration  = last exit end with 6 full-exit cards = (n-1)*0.8 + 2.2 = 6.2
+//   lastCardArrival = when card 5 finishes its entrance    = 5*0.8 + 1.0    = 5.0
+//
+//   Phase 2A (card transition):  last card grows/fades, dcOverlay fades in
+//   phase2aDuration = 2.0  → timeline 5.0 → 7.0
+//
+//   Phase 2B (zoom reveal):      dcBg scales 1→2.5, caption slides in
+//                                starts only AFTER 2A ends (overlay fully opaque)
+//   phase2bDuration = 2.0  → timeline 7.0 → 9.0
+//
+//   newTlDuration   = 5.0 + 2.0 + 2.0                                     = 9.0
+//   origPinPct      = n * 80                                               = 480
+//   newPinPct       = 480 × (9.0 / 6.2) = 696.77 → 697
+//   per-unit vh     = 480/6.2 = 697/9.0 = 77.4 vh/unit  ✓ (unchanged)
 // ────────────────────────────────────────────────────────────────────────────
 const n = PORTFOLIO_PROJECTS.length;
-const ORIG_TL_DURATION = (n - 1) * 0.8 + 2.2;       // 6.2
-const LAST_CARD_ARRIVAL = LAST_INDEX * 0.8 + 1.0;     // 5.0
-const PHASE2_DURATION = 2.0;
-const NEW_TL_DURATION = LAST_CARD_ARRIVAL + PHASE2_DURATION; // 7.0
-const ORIG_PIN_PCT = n * 80;                            // 480
-const NEW_PIN_PCT = Math.round(ORIG_PIN_PCT * (NEW_TL_DURATION / ORIG_TL_DURATION)); // ≈ 542
+const ORIG_TL_DURATION  = (n - 1) * 0.8 + 2.2;          // 6.2
+const LAST_CARD_ARRIVAL = LAST_INDEX * 0.8 + 1.0;         // 5.0
+const PHASE2A_DURATION  = 2.0;  // card grows/fades + dcOverlay fades in
+const PHASE2B_DURATION  = 2.0;  // dcBg zoom + caption reveal (starts after 2A)
+const PHASE2B_START     = LAST_CARD_ARRIVAL + PHASE2A_DURATION; // 7.0
+const NEW_TL_DURATION   = PHASE2B_START + PHASE2B_DURATION;     // 9.0
+const ORIG_PIN_PCT      = n * 80;                          // 480
+const NEW_PIN_PCT       = Math.round(ORIG_PIN_PCT * (NEW_TL_DURATION / ORIG_TL_DURATION)); // 697
 
 export default function PortfolioSection() {
   const triggerRef = useRef<HTMLElement>(null);
@@ -170,6 +180,11 @@ export default function PortfolioSection() {
 
             if (!dcOverlay || !dcBg || !dcCaption) return;
 
+            // ── Phase 2A: card transition ─────────────────────────────────
+            // Card scales up from Left-Bottom, drifts to viewport center,
+            // corners flatten. DC overlay fades in over it. Ends with card
+            // invisible and dcOverlay fully opaque.
+
             // Card: scale up and drift to viewport center, corners open to 0
             tl.to(
               lastCard,
@@ -179,40 +194,45 @@ export default function PortfolioSection() {
                 scale: 4,
                 borderRadius: "0px",
                 force3D: true,
-                duration: PHASE2_DURATION,
+                duration: PHASE2A_DURATION,
                 ease: "none",
               },
               LAST_CARD_ARRIVAL
             );
 
-            // Card: fade out in the second half of Phase 2 (crossfade into overlay)
+            // Card: fade out in the second half of Phase 2A (crossfade into overlay)
             tl.to(
               lastCard,
-              { opacity: 0, duration: PHASE2_DURATION * 0.6, ease: "none" },
-              LAST_CARD_ARRIVAL + PHASE2_DURATION * 0.4
+              { opacity: 0, duration: PHASE2A_DURATION * 0.6, ease: "none" },
+              LAST_CARD_ARRIVAL + PHASE2A_DURATION * 0.4
             );
 
-            // DC overlay: fade in starting at 25% through Phase 2
-            // Covers the scaling card and reveals the Digital Craft visuals
+            // DC overlay: fade in starting at 25% through Phase 2A
+            // Covers the scaling card and reveals the Digital Craft background
             tl.to(
               dcOverlay,
-              { opacity: 1, duration: PHASE2_DURATION * 0.75, ease: "none" },
-              LAST_CARD_ARRIVAL + PHASE2_DURATION * 0.25
+              { opacity: 1, duration: PHASE2A_DURATION * 0.75, ease: "none" },
+              LAST_CARD_ARRIVAL + PHASE2A_DURATION * 0.25
             );
 
-            // DC background: scale 1 → 2.5 (mirrors TextRevealSection's .reveal-bg tween)
+            // ── Phase 2B: zoom reveal ─────────────────────────────────────
+            // Starts only after Phase 2A ends (dcOverlay is now fully opaque).
+            // dcBg zoom and caption are both fully visible when they animate.
+
+            // DC background: scale 1 → 2.5 (mirrors TextRevealSection's .reveal-bg)
+            // Starts at PHASE2B_START (= 7.0) so zoom plays on a fully visible overlay
             tl.to(
               dcBg,
-              { scale: 2.5, duration: PHASE2_DURATION, ease: "none" },
-              LAST_CARD_ARRIVAL
+              { scale: 2.5, duration: PHASE2B_DURATION, ease: "none" },
+              PHASE2B_START
             );
 
-            // DC caption: slide up + fade in (mirrors TextRevealSection's .overlay-text tween)
+            // DC caption: slide up + fade in (mirrors TextRevealSection's .overlay-text)
             tl.fromTo(
               dcCaption,
               { opacity: 0, y: 100 },
-              { opacity: 1, y: 0, duration: PHASE2_DURATION, ease: "none" },
-              LAST_CARD_ARRIVAL
+              { opacity: 1, y: 0, duration: PHASE2B_DURATION, ease: "none" },
+              PHASE2B_START
             );
           }
         }
