@@ -11,41 +11,49 @@ gsap.registerPlugin(ScrollTrigger);
 
 const LAST_INDEX = PORTFOLIO_PROJECTS.length - 1;
 
-// ── Phase 2A/2B scroll-speed math ───────────────────────────────────────────
+// ── Phase 2A/2B scroll-speed math (n=7 cards) ───────────────────────────────
 // With scrub the timeline maps 0→end proportionally to scroll 0→pinLength.
-// To keep cards 0–4 at exactly the same scroll speed as before, we extend
+// To keep cards 0–5 at exactly the same scroll speed as before, we extend
 // the pin proportionally so each timeline unit still covers the same vh.
 //
-//   origTlDuration  = last exit end with 6 full-exit cards = (n-1)*0.8 + 2.2 = 6.2
-//   lastCardArrival = when card 5 finishes its entrance    = 5*0.8 + 1.0    = 5.0
+//   origTlDuration  = what the timeline would be if all 7 had full exits
+//                   = (n-1)*0.8 + 2.2 = 6*0.8 + 2.2                    = 7.0
+//   lastCardArrival = when card 6 (new last) finishes its entrance
+//                   = LAST_INDEX*0.8 + 1.0 = 6*0.8 + 1.0               = 5.8
 //
-//   Phase 2A (card transition):  last card grows/fades, dcOverlay fades in
-//   phase2aDuration = 2.0  → timeline 5.0 → 7.0
+//   Phase 2A (card transition):  last card grows to full-screen,
+//                                desaturates to full color, dcOverlay darkens
+//   phase2aDuration = 2.0  → timeline 5.8 → 7.8
 //
-//   Phase 2B (zoom reveal):      dcBg scales 1→2.5, caption slides in
-//                                starts only AFTER 2A ends (overlay fully opaque)
-//   phase2bDuration = 2.0  → timeline 7.0 → 9.0
+//   Phase 2B (zoom + text reveal): dcZoom scales 1→2.5, text/caption appear
+//                                  starts only AFTER 2A ends
+//   phase2bDuration = 2.0  → timeline 7.8 → 9.8
 //
-//   newTlDuration   = 5.0 + 2.0 + 2.0                                     = 9.0
-//   origPinPct      = n * 80                                               = 480
-//   newPinPct       = 480 × (9.0 / 6.2) = 696.77 → 697
-//   per-unit vh     = 480/6.2 = 697/9.0 = 77.4 vh/unit  ✓ (unchanged)
+//   newTlDuration   = 5.8 + 2.0 + 2.0                                   = 9.8
+//   origPinPct      = n * 80                                             = 560
+//   newPinPct       = 560 × (9.8 / 7.0) = 784
+//   per-unit vh     = 560/7.0 = 784/9.8 = 80 vh/unit  ✓ (unchanged)
 // ────────────────────────────────────────────────────────────────────────────
 const n = PORTFOLIO_PROJECTS.length;
-const ORIG_TL_DURATION  = (n - 1) * 0.8 + 2.2;          // 6.2
-const LAST_CARD_ARRIVAL = LAST_INDEX * 0.8 + 1.0;         // 5.0
-const PHASE2A_DURATION  = 2.0;  // card grows/fades + dcOverlay fades in
-const PHASE2B_DURATION  = 2.0;  // dcBg zoom + caption reveal (starts after 2A)
-const PHASE2B_START     = LAST_CARD_ARRIVAL + PHASE2A_DURATION; // 7.0
-const NEW_TL_DURATION   = PHASE2B_START + PHASE2B_DURATION;     // 9.0
-const ORIG_PIN_PCT      = n * 80;                          // 480
-const NEW_PIN_PCT       = Math.round(ORIG_PIN_PCT * (NEW_TL_DURATION / ORIG_TL_DURATION)); // 697
+const ORIG_TL_DURATION  = (n - 1) * 0.8 + 2.2;          // 7.0  (n=7)
+const LAST_CARD_ARRIVAL = LAST_INDEX * 0.8 + 1.0;         // 5.8  (LAST_INDEX=6)
+const PHASE2A_DURATION  = 2.0;  // last card grows, desaturates, overlay darkens
+const PHASE2B_DURATION  = 2.0;  // image zoom + DIGITAL/CRAFT text + caption (after 2A)
+const PHASE2B_START     = LAST_CARD_ARRIVAL + PHASE2A_DURATION; // 7.8
+const NEW_TL_DURATION   = PHASE2B_START + PHASE2B_DURATION;     // 9.8
+const ORIG_PIN_PCT      = n * 80;                          // 560
+const NEW_PIN_PCT       = Math.round(ORIG_PIN_PCT * (NEW_TL_DURATION / ORIG_TL_DURATION)); // 784
 
 export default function PortfolioSection() {
   const triggerRef = useRef<HTMLElement>(null);
   const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
+  // dcOverlayRef  — container; fades in during Phase 2A to darken the scaled card
   const dcOverlayRef = useRef<HTMLDivElement>(null);
-  const dcBgRef = useRef<HTMLDivElement>(null);
+  // dcZoomRef     — wrapper around the last card's image; scales 1→2.5 in Phase 2B
+  //                 (replaces the old separate dcBg image element)
+  const dcZoomRef = useRef<HTMLDivElement>(null);
+  // dcTextRef     — DIGITAL/CRAFT h2s; animates opacity 0→1 in Phase 2B
+  const dcTextRef = useRef<HTMLDivElement>(null);
   const dcCaptionRef = useRef<HTMLDivElement>(null);
   const [clickedCard, setClickedCard] = useState<number | null>(null);
 
@@ -175,15 +183,20 @@ export default function PortfolioSection() {
           if (isDesktop) {
             const lastCard = cards[LAST_INDEX];
             const dcOverlay = dcOverlayRef.current;
-            const dcBg = dcBgRef.current;
+            const dcZoom    = dcZoomRef.current;
+            const dcText    = dcTextRef.current;
             const dcCaption = dcCaptionRef.current;
 
-            if (!dcOverlay || !dcBg || !dcCaption) return;
+            if (!dcOverlay || !dcZoom || !dcText || !dcCaption) return;
 
             // ── Phase 2A: card transition ─────────────────────────────────
-            // Card scales up from Left-Bottom, drifts to viewport center,
-            // corners flatten. DC overlay fades in over it. Ends with card
-            // invisible and dcOverlay fully opaque.
+            // The 7th card's image already IS the DC background, so we scale
+            // the real card up to fill the viewport — no crossfade/swap needed.
+            // A darkening overlay fades in to match TextRevealSection's look.
+
+            // Raise card above section heading (z-20) and header label (z-30)
+            // so it covers them as it expands. Reverses on scroll-back.
+            tl.set(lastCard, { zIndex: 50 }, LAST_CARD_ARRIVAL);
 
             // Card: scale up and drift to viewport center, corners open to 0
             tl.to(
@@ -200,34 +213,43 @@ export default function PortfolioSection() {
               LAST_CARD_ARRIVAL
             );
 
-            // Card: fade out in the second half of Phase 2A (crossfade into overlay)
+            // Card: desaturate from gallery-grayscale to full color as it opens
             tl.to(
               lastCard,
-              { opacity: 0, duration: PHASE2A_DURATION * 0.6, ease: "none" },
-              LAST_CARD_ARRIVAL + PHASE2A_DURATION * 0.4
+              { filter: "grayscale(0)", duration: PHASE2A_DURATION, ease: "none" },
+              LAST_CARD_ARRIVAL
             );
 
-            // DC overlay: fade in starting at 25% through Phase 2A
-            // Covers the scaling card and reveals the Digital Craft background
+            // DC overlay (dark layer + text container): fade in from 25% through Phase 2A.
+            // The darkness matches TextRevealSection's image-at-30%-opacity look.
+            // Card opacity stays at 1 — the real card image IS the background.
             tl.to(
               dcOverlay,
               { opacity: 1, duration: PHASE2A_DURATION * 0.75, ease: "none" },
               LAST_CARD_ARRIVAL + PHASE2A_DURATION * 0.25
             );
 
-            // ── Phase 2B: zoom reveal ─────────────────────────────────────
-            // Starts only after Phase 2A ends (dcOverlay is now fully opaque).
-            // dcBg zoom and caption are both fully visible when they animate.
+            // ── Phase 2B: zoom + text reveal ──────────────────────────────
+            // Starts after Phase 2A ends — overlay is fully opaque, card fully
+            // de-saturated and filling the viewport. Everything below is visible.
 
-            // DC background: scale 1 → 2.5 (mirrors TextRevealSection's .reveal-bg)
-            // Starts at PHASE2B_START (= 7.0) so zoom plays on a fully visible overlay
+            // Image zoom 1 → 2.5 via the inner zoom wrapper (replaces old dcBg tween).
+            // dcZoomRef is a div wrapping the <Image> inside the last card;
+            // overflow:hidden on the card clips the zoom to the viewport area.
             tl.to(
-              dcBg,
-              { scale: 2.5, duration: PHASE2B_DURATION, ease: "none" },
+              dcZoom,
+              { scale: 2.5, duration: PHASE2B_DURATION, ease: "none", willChange: "transform" },
               PHASE2B_START
             );
 
-            // DC caption: slide up + fade in (mirrors TextRevealSection's .overlay-text)
+            // DIGITAL/CRAFT heading: fade in
+            tl.to(
+              dcText,
+              { opacity: 1, duration: PHASE2B_DURATION * 0.7, ease: "none" },
+              PHASE2B_START
+            );
+
+            // Caption: slide up + fade in (mirrors TextRevealSection's .overlay-text)
             tl.fromTo(
               dcCaption,
               { opacity: 0, y: 100 },
@@ -295,96 +317,110 @@ export default function PortfolioSection() {
         </Link>
       </div>
 
-      {/* ─── Cards Container ─── */}
-      <div className="absolute inset-0 z-10 pointer-events-none">
-        {PORTFOLIO_PROJECTS.map((project, i) => (
-          <div
-            key={project.title}
-            ref={(el) => {
-              itemsRef.current[i] = el;
-            }}
-            // Note: transition-[filter] only (not opacity) — GSAP owns opacity via scrub
-            className={`absolute w-[68vw] h-[34vh] md:w-[26vw] md:h-[38vh] rounded-3xl overflow-hidden group transition-[filter] duration-700 cursor-pointer transform-gpu pointer-events-auto shadow-2xl border border-white/5 ${
-              clickedCard === i ? "grayscale-0" : "grayscale md:hover:grayscale-0"
-            }`}
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                setClickedCard(clickedCard === i ? null : i);
-              }
-            }}
-            style={{
-              left: 0,
-              top: 0,
-              zIndex: i,
-              opacity: 0,
-              willChange: "transform, opacity",
-            }}
-          >
-            {/* Image */}
-            <Image
-              src={project.image}
-              alt={project.title}
-              fill
-              sizes="(max-width: 768px) 68vw, 26vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            />
+      {/* ─── Cards Container ───────────────────────────────────────────────
+          No z-index class here intentionally: omitting z-index means this
+          div does NOT create a stacking context, so the last card's z-index
+          (set to 50 by GSAP in Phase 2A) can compete directly with the
+          section heading (z-20) and header label (z-30) and cover them.   */}
+      <div className="absolute inset-0 pointer-events-none">
+        {PORTFOLIO_PROJECTS.map((project, i) => {
+          const isLastCard = i === LAST_INDEX;
+          return (
+            <div
+              key={project.title}
+              ref={(el) => {
+                itemsRef.current[i] = el;
+              }}
+              // transition-[filter] only — GSAP owns opacity (and filter for last card in Phase 2A)
+              className={`absolute w-[68vw] h-[34vh] md:w-[26vw] md:h-[38vh] rounded-3xl overflow-hidden group transition-[filter] duration-700 cursor-pointer transform-gpu pointer-events-auto shadow-2xl border border-white/5 ${
+                clickedCard === i ? "grayscale-0" : "grayscale md:hover:grayscale-0"
+              }`}
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  setClickedCard(clickedCard === i ? null : i);
+                }
+              }}
+              style={{
+                left: 0,
+                top: 0,
+                zIndex: i,
+                opacity: 0,
+                willChange: "transform, opacity",
+              }}
+            >
+              {/* Image — last card wraps in dcZoomRef so Phase 2B can zoom just the image */}
+              {isLastCard ? (
+                <div
+                  ref={dcZoomRef}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    transformOrigin: "center center",
+                    willChange: "transform",
+                  }}
+                >
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    sizes="(max-width: 768px) 68vw, 26vw"
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <Image
+                  src={project.image}
+                  alt={project.title}
+                  fill
+                  sizes="(max-width: 768px) 68vw, 26vw"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                />
+              )}
 
-            {/* Dark overlay */}
-            <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
+              {/* Dark overlay */}
+              <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
 
-            {/* Bottom label */}
-            <div className="absolute inset-x-0 bottom-0 p-6 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
-              <span className="text-xs uppercase tracking-[0.2em] text-gold font-medium">
-                {project.category}
-              </span>
-              <h3
-                className="text-2xl font-bold text-foreground mt-1"
-                style={{ fontFamily: "var(--font-playfair)" }}
-              >
-                {project.title}
-              </h3>
+              {/* Bottom label */}
+              <div className="absolute inset-x-0 bottom-0 p-6 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+                <span className="text-xs uppercase tracking-[0.2em] text-gold font-medium">
+                  {project.category}
+                </span>
+                <h3
+                  className="text-2xl font-bold text-foreground mt-1"
+                  style={{ fontFamily: "var(--font-playfair)" }}
+                >
+                  {project.title}
+                </h3>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* ─── Digital Craft Overlay (Desktop Phase 2 only) ─────────────────
-          Sits at z-40, invisible initially (opacity: 0).
-          GSAP fades it in during Phase 2 as the last card scales beneath it.
-          hidden md:flex means: display:none on mobile (TextRevealSection
-          handles mobile), display:flex on desktop (animated by GSAP).     */}
+      {/* ─── Digital Craft Text Overlay (Desktop Phase 2 only) ────────────
+          z-60: above the last card (which GSAP sets to z-50 in Phase 2A).
+          No background image here — the real 7th card's image IS the bg.
+          Contains only: a dark-tint div (to match TextRevealSection's
+          image-at-30%-opacity look) + DIGITAL/CRAFT text + caption.
+          Container starts opacity:0; GSAP fades it in during Phase 2A
+          so the darkness and text overlay appear together.
+          hidden md:flex: display:none on mobile (TextRevealSection handles
+          mobile), display:flex on desktop.                               */}
       <div
         ref={dcOverlayRef}
-        className="hidden md:flex absolute inset-0 z-40 items-center justify-center pointer-events-none"
-        style={{
-          opacity: 0,
-          background: "var(--bg-deep)",
-          willChange: "opacity",
-        }}
+        className="hidden md:flex absolute inset-0 z-60 items-center justify-center pointer-events-none"
+        style={{ opacity: 0, willChange: "opacity" }}
       >
-        {/* Background image — GSAP scales 1 → 2.5 (mirrors .reveal-bg) */}
-        <div
-          ref={dcBgRef}
-          style={{
-            position: "absolute",
-            inset: 0,
-            transformOrigin: "center center",
-            willChange: "transform",
-          }}
-        >
-          <Image
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000"
-            alt="Digital craft background"
-            fill
-            sizes="100vw"
-            style={{ objectFit: "cover", opacity: 0.3 }}
-          />
-        </div>
+        {/* Darkening tint — matches the ~70% darkness of TextRevealSection's
+            image-at-0.3-opacity-over-dark-background visual */}
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.70)" }} />
 
-        {/* DIGITAL / CRAFT heading — always visible once overlay appears (no separate anim) */}
+        {/* DIGITAL / CRAFT heading — revealed by container fade-in; separately
+            animated opacity 0→1 in Phase 2B for the text-appears-on-zoom effect */}
         <div
+          ref={dcTextRef}
           className="relative z-10 text-center px-4"
-          style={{ mixBlendMode: "screen" }}
+          style={{ mixBlendMode: "screen", opacity: 0 }}
         >
           <h2
             className="text-[15vw] leading-none font-black tracking-tighter"
@@ -403,7 +439,7 @@ export default function PortfolioSection() {
           </h2>
         </div>
 
-        {/* Caption — GSAP fades + slides up (mirrors .overlay-text in TextRevealSection) */}
+        {/* Caption — GSAP fromTo opacity 0→1, y 100→0 in Phase 2B */}
         <div
           ref={dcCaptionRef}
           style={{

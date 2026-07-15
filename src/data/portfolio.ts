@@ -35,4 +35,10 @@ export const PORTFOLIO_PROJECTS = [
     image: "https://images.unsplash.com/photo-1487530811176-3780de880c2d?auto=format&fit=crop&q=80&w=800",
     description: "Organic skincare brand with subscription model.",
   },
+  {
+    title: "Whiskey Peak Studio",
+    category: "Agency Identity",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800",
+    description: "Our own brand — built with the same care we give every client.",
+  },
 ];
