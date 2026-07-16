@@ -55,6 +55,9 @@ export default function PortfolioSection() {
   // dcTextRef     — DIGITAL/CRAFT h2s; animates opacity 0→1 in Phase 2B
   const dcTextRef = useRef<HTMLDivElement>(null);
   const dcCaptionRef = useRef<HTMLDivElement>(null);
+  // dcCardLabelRef — last card's bottom label (Agency Identity / Whiskey Peak Studio);
+  //                  GSAP fades it out at Phase 2A start so it's gone before DC text appears.
+  const dcCardLabelRef = useRef<HTMLDivElement>(null);
   const [clickedCard, setClickedCard] = useState<number | null>(null);
 
   useLayoutEffect(() => {
@@ -70,10 +73,10 @@ export default function PortfolioSection() {
           trigger: trigger,
           pin: true,
           start: "top top",
-          // Desktop: extended pin to cover Phase 2 at the same per-unit scroll speed.
-          // Mobile:  original pin length (no Phase 2 on mobile).
-          end: () =>
-            `+=${window.innerWidth >= 768 ? NEW_PIN_PCT : ORIG_PIN_PCT}%`,
+          // Phase 2 now runs on BOTH desktop and mobile, so both use NEW_PIN_PCT.
+          // Math: ORIG_PIN_PCT × (NEW_TL_DURATION / ORIG_TL_DURATION) = 784
+          // (Mobile and desktop resolve to the same value — see comment block above.)
+          end: () => `+=${NEW_PIN_PCT}%`,
           scrub: 0.5,
           invalidateOnRefresh: true,
         },
@@ -134,7 +137,7 @@ export default function PortfolioSection() {
               // it stays at Left-Bottom and continues into Phase 2 below.
 
             } else {
-              // ── Mobile: Right-Bottom → Left-Bottom → exit top (unchanged) ─
+              // ── Mobile: entrance (all cards): Right-Bottom → Left-Bottom ───
               tl.fromTo(
                 card,
                 { x: exitX, y: bottomY, scale: 0.9, rotate: 0 },
@@ -147,18 +150,24 @@ export default function PortfolioSection() {
                 { opacity: 1, duration: 1.0, ease: "none" },
                 i * 0.8
               );
-              tl.fromTo(
-                card,
-                { x: leftX, y: bottomY, scale: 1, rotate: 0 },
-                { x: leftX, y: startY, scale: 0.9, rotate: 0, duration: 1.0, ease: "none" },
-                i * 0.8 + 1.2
-              );
-              tl.fromTo(
-                card,
-                { opacity: 1 },
-                { opacity: 0, duration: 1.0, ease: "none" },
-                i * 0.8 + 1.2
-              );
+
+              // ── Exit top (cards 0–5 only; last card stays for mobile Phase 2) ─
+              const isLastMobile = !isDesktop && i === LAST_INDEX;
+              if (!isLastMobile) {
+                tl.fromTo(
+                  card,
+                  { x: leftX, y: bottomY, scale: 1, rotate: 0 },
+                  { x: leftX, y: startY, scale: 0.9, rotate: 0, duration: 1.0, ease: "none" },
+                  i * 0.8 + 1.2
+                );
+                tl.fromTo(
+                  card,
+                  { opacity: 1 },
+                  { opacity: 0, duration: 1.0, ease: "none" },
+                  i * 0.8 + 1.2
+                );
+              }
+              // Last mobile card stays at Left-Bottom; continues into mobile Phase 2 below.
             }
           });
 
@@ -229,6 +238,16 @@ export default function PortfolioSection() {
               LAST_CARD_ARRIVAL + PHASE2A_DURATION * 0.25
             );
 
+            // Last card's bottom label (title + studio name): fade out immediately
+            // so it's fully gone before Phase 2B reveals the DIGITAL/CRAFT text.
+            if (dcCardLabelRef.current) {
+              tl.to(
+                dcCardLabelRef.current,
+                { opacity: 0, duration: PHASE2A_DURATION * 0.3, ease: "none" },
+                LAST_CARD_ARRIVAL
+              );
+            }
+
             // ── Phase 2B: zoom + text reveal ──────────────────────────────
             // Starts after Phase 2A ends — overlay is fully opaque, card fully
             // de-saturated and filling the viewport. Everything below is visible.
@@ -250,6 +269,101 @@ export default function PortfolioSection() {
             );
 
             // Caption: slide up + fade in (mirrors TextRevealSection's .overlay-text)
+            tl.fromTo(
+              dcCaption,
+              { opacity: 0, y: 100 },
+              { opacity: 1, y: 0, duration: PHASE2B_DURATION, ease: "none" },
+              PHASE2B_START
+            );
+          }
+
+          // ── Phase 2: Mobile ───────────────────────────────────────────────
+          // Mirror of the desktop Phase 2 but with mobile card geometry:
+          //
+          //   Card size: 68vw × 34vh, DOM origin (left:0, top:0)
+          //   Center without transform: (34vw, 17vh)
+          //   At Left-Bottom (x=8vw, y=52vh): visual center = (42vw, 69vh)
+          //
+          //   To center on viewport (50vw, 50vh):
+          //     targetX = 50 − 34 = 16vw
+          //     targetY = 50 − 17 = 33vh
+          //     scale   = 100vh / 34vh ≈ 2.94 → 3.0 (height is binding constraint)
+          //
+          //   At scale 3: 68×3=204vw ✓, 34×3=102vh ✓ (fully covers viewport)
+          //
+          // Timeline positions: LAST_CARD_ARRIVAL / PHASE2B_START are identical
+          // to desktop since the entrance formula is the same for both.
+          // ────────────────────────────────────────────────────────────────────────────
+          if (!isDesktop) {
+            const lastCard = cards[LAST_INDEX];
+            const dcOverlay = dcOverlayRef.current;
+            const dcZoom    = dcZoomRef.current;
+            const dcText    = dcTextRef.current;
+            const dcCaption = dcCaptionRef.current;
+
+            if (!dcOverlay || !dcZoom || !dcText || !dcCaption) return;
+
+            // ── Mobile Phase 2A: card transition ────────────────────────────
+
+            // Raise last card above section heading (z-20) and header (z-30)
+            tl.set(lastCard, { zIndex: 50 }, LAST_CARD_ARRIVAL);
+
+            // Card grows from Left-Bottom to viewport center (mobile geometry)
+            tl.to(
+              lastCard,
+              {
+                x: "16vw",
+                y: "33vh",
+                scale: 3,
+                borderRadius: "0px",
+                force3D: true,
+                duration: PHASE2A_DURATION,
+                ease: "none",
+              },
+              LAST_CARD_ARRIVAL
+            );
+
+            // Desaturate: gallery grayscale → full color as card opens
+            tl.to(
+              lastCard,
+              { filter: "grayscale(0)", duration: PHASE2A_DURATION, ease: "none" },
+              LAST_CARD_ARRIVAL
+            );
+
+            // Darken overlay fades in from 25% through Phase 2A
+            tl.to(
+              dcOverlay,
+              { opacity: 1, duration: PHASE2A_DURATION * 0.75, ease: "none" },
+              LAST_CARD_ARRIVAL + PHASE2A_DURATION * 0.25
+            );
+
+            // Last card's bottom label: fade out immediately so it's gone before
+            // Phase 2B reveals the DIGITAL/CRAFT text overlay.
+            if (dcCardLabelRef.current) {
+              tl.to(
+                dcCardLabelRef.current,
+                { opacity: 0, duration: PHASE2A_DURATION * 0.3, ease: "none" },
+                LAST_CARD_ARRIVAL
+              );
+            }
+
+            // ── Mobile Phase 2B: zoom + text reveal ─────────────────────────
+
+            // Image zoom 1→2.5 (same target as desktop; dcZoomRef is shared)
+            tl.to(
+              dcZoom,
+              { scale: 2.5, duration: PHASE2B_DURATION, ease: "none", willChange: "transform" },
+              PHASE2B_START
+            );
+
+            // DIGITAL/CRAFT text fades in
+            tl.to(
+              dcText,
+              { opacity: 1, duration: PHASE2B_DURATION * 0.7, ease: "none" },
+              PHASE2B_START
+            );
+
+            // Caption slides up
             tl.fromTo(
               dcCaption,
               { opacity: 0, y: 100 },
@@ -373,15 +487,18 @@ export default function PortfolioSection() {
                   alt={project.title}
                   fill
                   sizes="(max-width: 768px) 68vw, 26vw"
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  className="object-cover transition-transform duration-700 ease-out md:group-hover:scale-110"
                 />
               )}
 
               {/* Dark overlay */}
-              <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
+              <div className="absolute inset-0 bg-black/20 transition-colors duration-500 md:group-hover:bg-black/40" />
 
               {/* Bottom label */}
-              <div className="absolute inset-x-0 bottom-0 p-6 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+              <div
+                ref={isLastCard ? dcCardLabelRef : undefined}
+                className="absolute inset-x-0 bottom-0 p-6 translate-y-4 opacity-0 transition-all duration-500 md:group-hover:translate-y-0 md:group-hover:opacity-100 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
+              >
                 <span className="text-xs uppercase tracking-[0.2em] text-gold font-medium">
                   {project.category}
                 </span>
@@ -408,7 +525,7 @@ export default function PortfolioSection() {
           mobile), display:flex on desktop.                               */}
       <div
         ref={dcOverlayRef}
-        className="hidden md:flex absolute inset-0 z-60 items-center justify-center pointer-events-none"
+        className="flex absolute inset-0 z-60 items-center justify-center pointer-events-none overflow-hidden"
         style={{ opacity: 0, willChange: "opacity" }}
       >
         {/* Darkening tint — matches the ~70% darkness of TextRevealSection's
@@ -423,7 +540,7 @@ export default function PortfolioSection() {
           style={{ mixBlendMode: "screen", opacity: 0 }}
         >
           <h2
-            className="text-[15vw] leading-none font-black tracking-tighter"
+            className="text-[min(13vw,8vh)] md:text-[15vw] leading-none font-black tracking-tighter"
             style={{
               color: "var(--text-primary)",
               fontFamily: "var(--font-playfair), serif",
@@ -432,7 +549,7 @@ export default function PortfolioSection() {
             DIGITAL
           </h2>
           <h2
-            className="text-[15vw] leading-none font-black tracking-tighter reveal-title-craft-dc"
+            className="text-[min(13vw,8vh)] md:text-[15vw] leading-none font-black tracking-tighter reveal-title-craft-dc"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
             CRAFT
@@ -444,14 +561,16 @@ export default function PortfolioSection() {
           ref={dcCaptionRef}
           style={{
             position: "absolute",
-            bottom: "5rem",
+            // clamp: scales with viewport height so caption never collides with
+            // the centered headings on short screens (e.g. landscape mobile).
+            bottom: "clamp(1.5rem, 5vh, 5rem)",
             left: 0,
             right: 0,
             textAlign: "center",
           }}
         >
           <p
-            className="text-lg md:text-2xl font-light tracking-wide"
+            className="text-sm md:text-2xl font-light tracking-wide px-4"
             style={{
               color: "var(--text-primary)",
               fontFamily: "var(--font-inter), sans-serif",

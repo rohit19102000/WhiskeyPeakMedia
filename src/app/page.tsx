@@ -26,11 +26,9 @@ export default function Home() {
       <IntroSection />
       <ServicesSection />
       <PortfolioSection />
-      {/* On desktop, Digital Craft is rendered by PortfolioSection's Phase 2 transition.
-          On mobile, TextRevealSection renders normally as a standalone section. */}
-      <div className="md:hidden">
-        <TextRevealSection />
-      </div>
+      {/* Digital Craft is now rendered by PortfolioSection's Phase 2 transition
+          on both desktop and mobile — TextRevealSection no longer renders here.
+          TextRevealSection.tsx is kept as a reference/fallback file. */}
       <ProcessSection />
       <TeamSection />
       <StatsSection />
