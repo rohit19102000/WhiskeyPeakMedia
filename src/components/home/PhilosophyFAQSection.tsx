@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Plus, Minus } from "lucide-react";
 import { FAQS } from "@/data/faqs";
 import gsap from "gsap";

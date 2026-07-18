@@ -2,20 +2,24 @@
 
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "motion/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Button from "@/components/ui/Button";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const { scrollY } = useScroll();
   const textY = useTransform(scrollY, [0, 500], [0, -150]);
   const indicatorOpacity = useTransform(scrollY, [0, 200], [1, 0]);
 
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     gsap.registerPlugin(ScrollTrigger);
 
     const section = sectionRef.current;
@@ -191,6 +195,7 @@ export default function Hero() {
               src="/images/hero-bg.png"
               alt="Whiskey Peak Media Hero Background"
               fill
+              sizes="100vw"
               priority
               className="object-cover opacity-45"
             />
@@ -202,7 +207,7 @@ export default function Hero() {
 
         {/* Content */}
         <motion.div
-          style={{ y: textY }}
+          style={{ y: prefersReducedMotion ? 0 : textY }}
           className="relative z-10 flex items-center justify-center h-full w-full px-6"
         >
           <div

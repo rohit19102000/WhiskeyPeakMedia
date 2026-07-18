@@ -6,6 +6,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { PORTFOLIO_PROJECTS } from "@/data/portfolio";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -59,8 +60,10 @@ export default function PortfolioSection() {
   //                  GSAP fades it out at Phase 2A start so it's gone before DC text appears.
   const dcCardLabelRef = useRef<HTMLDivElement>(null);
   const [clickedCard, setClickedCard] = useState<number | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useLayoutEffect(() => {
+    if (prefersReducedMotion) return;
     const trigger = triggerRef.current;
     if (!trigger) return;
 
@@ -382,7 +385,11 @@ export default function PortfolioSection() {
     <section
       id="portfolio"
       ref={triggerRef}
-      className="h-screen overflow-hidden bg-background text-foreground relative"
+      className={
+        prefersReducedMotion
+          ? "py-32 bg-background text-foreground relative overflow-visible min-h-screen"
+          : "h-screen overflow-hidden bg-background text-foreground relative"
+      }
     >
       {/* Gradient text style for CRAFT — mirrors TextRevealSection's .reveal-title-craft */}
       <style>{`
@@ -403,14 +410,14 @@ export default function PortfolioSection() {
       `}</style>
 
       {/* ─── Fixed header ─── */}
-      <div className="absolute top-8 left-8 z-30 mix-blend-difference">
+      <div className={prefersReducedMotion ? "relative mb-12 px-6 flex justify-between items-center" : "absolute top-8 left-8 z-30 mix-blend-difference"}>
         <span className="text-gold uppercase tracking-[0.25em] text-sm font-medium">
           Selected Works
         </span>
       </div>
 
-      {/* ─── Heading and description (Right-Top quadrant on desktop) ─── */}
-      <div className="absolute top-24 left-8 md:top-36 md:left-[52vw] z-20 text-left max-w-lg md:max-w-xl flex flex-col items-start">
+      {/* ─── Heading and description ─── */}
+      <div className={prefersReducedMotion ? "max-w-4xl mx-auto px-6 text-center flex flex-col items-center mb-16 relative" : "absolute top-24 left-8 md:top-36 md:left-[52vw] z-20 text-left max-w-lg md:max-w-xl flex flex-col items-start"}>
         <h2
           className="text-4xl md:text-6xl font-bold leading-tight text-foreground"
           style={{ fontFamily: "var(--font-playfair)" }}
@@ -436,7 +443,7 @@ export default function PortfolioSection() {
           div does NOT create a stacking context, so the last card's z-index
           (set to 50 by GSAP in Phase 2A) can compete directly with the
           section heading (z-20) and header label (z-30) and cover them.   */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className={prefersReducedMotion ? "max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pointer-events-auto relative" : "absolute inset-0 pointer-events-none"}>
         {PORTFOLIO_PROJECTS.map((project, i) => {
           const isLastCard = i === LAST_INDEX;
           return (
@@ -446,15 +453,21 @@ export default function PortfolioSection() {
                 itemsRef.current[i] = el;
               }}
               // transition-[filter] only — GSAP owns opacity (and filter for last card in Phase 2A)
-              className={`absolute w-[68vw] h-[34vh] md:w-[26vw] md:h-[38vh] rounded-3xl overflow-hidden group transition-[filter] duration-700 cursor-pointer transform-gpu pointer-events-auto shadow-2xl border border-white/5 ${
-                clickedCard === i ? "grayscale-0" : "grayscale md:hover:grayscale-0"
-              }`}
+              className={prefersReducedMotion
+                ? "relative w-full h-[38vh] rounded-3xl overflow-hidden group transition-[filter] duration-700 cursor-pointer shadow-2xl border border-white/5 grayscale-0"
+                : `absolute w-[68vw] h-[34vh] md:w-[26vw] md:h-[38vh] rounded-3xl overflow-hidden group transition-[filter] duration-700 cursor-pointer transform-gpu pointer-events-auto shadow-2xl border border-white/5 ${
+                    clickedCard === i ? "grayscale-0" : "grayscale md:hover:grayscale-0"
+                  }`
+              }
               onClick={() => {
                 if (window.innerWidth < 768) {
                   setClickedCard(clickedCard === i ? null : i);
                 }
               }}
-              style={{
+              style={prefersReducedMotion ? {
+                zIndex: i,
+                opacity: 1,
+              } : {
                 left: 0,
                 top: 0,
                 zIndex: i,
@@ -514,72 +527,108 @@ export default function PortfolioSection() {
         })}
       </div>
 
-      {/* ─── Digital Craft Text Overlay (Desktop Phase 2 only) ────────────
-          z-60: above the last card (which GSAP sets to z-50 in Phase 2A).
-          No background image here — the real 7th card's image IS the bg.
-          Contains only: a dark-tint div (to match TextRevealSection's
-          image-at-30%-opacity look) + DIGITAL/CRAFT text + caption.
-          Container starts opacity:0; GSAP fades it in during Phase 2A
-          so the darkness and text overlay appear together.
-          hidden md:flex: display:none on mobile (TextRevealSection handles
-          mobile), display:flex on desktop.                               */}
-      <div
-        ref={dcOverlayRef}
-        className="flex absolute inset-0 z-60 items-center justify-center pointer-events-none overflow-hidden"
-        style={{ opacity: 0, willChange: "opacity" }}
-      >
-        {/* Darkening tint — matches the ~70% darkness of TextRevealSection's
-            image-at-0.3-opacity-over-dark-background visual */}
-        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.70)" }} />
-
-        {/* DIGITAL / CRAFT heading — revealed by container fade-in; separately
-            animated opacity 0→1 in Phase 2B for the text-appears-on-zoom effect */}
+      {/* ─── Digital Craft Text Overlay (Desktop Phase 2 only) ──────────── */}
+      {!prefersReducedMotion && (
         <div
-          ref={dcTextRef}
-          className="relative z-10 text-center px-4"
-          style={{ mixBlendMode: "screen", opacity: 0 }}
+          ref={dcOverlayRef}
+          className="flex absolute inset-0 z-60 items-center justify-center pointer-events-none overflow-hidden"
+          style={{ opacity: 0, willChange: "opacity" }}
         >
-          <h2
-            className="text-[min(13vw,8vh)] md:text-[15vw] leading-none font-black tracking-tighter"
+          {/* Darkening tint — matches the ~70% darkness of TextRevealSection's
+              image-at-0.3-opacity-over-dark-background visual */}
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.70)" }} />
+
+          {/* DIGITAL / CRAFT heading — revealed by container fade-in; separately
+              animated opacity 0→1 in Phase 2B for the text-appears-on-zoom effect */}
+          <div
+            ref={dcTextRef}
+            className="relative z-10 text-center px-4"
+            style={{ mixBlendMode: "screen", opacity: 0 }}
+          >
+            <h2
+              className="text-[min(13vw,8vh)] md:text-[15vw] leading-none font-black tracking-tighter"
+              style={{
+                color: "var(--text-primary)",
+                fontFamily: "var(--font-playfair), serif",
+              }}
+            >
+              DIGITAL
+            </h2>
+            <h2
+              className="text-[min(13vw,8vh)] md:text-[15vw] leading-none font-black tracking-tighter reveal-title-craft-dc"
+              style={{ fontFamily: "var(--font-playfair), serif" }}
+            >
+              CRAFT
+            </h2>
+          </div>
+
+          {/* Caption — GSAP fromTo opacity 0→1, y 100→0 in Phase 2B */}
+          <div
+            ref={dcCaptionRef}
             style={{
-              color: "var(--text-primary)",
-              fontFamily: "var(--font-playfair), serif",
+              position: "absolute",
+              // clamp: scales with viewport height so caption never collides with
+              // the centered headings on short screens (e.g. landscape mobile).
+              bottom: "clamp(1.5rem, 5vh, 5rem)",
+              left: 0,
+              right: 0,
+              textAlign: "center",
             }}
           >
-            DIGITAL
-          </h2>
-          <h2
-            className="text-[min(13vw,8vh)] md:text-[15vw] leading-none font-black tracking-tighter reveal-title-craft-dc"
-            style={{ fontFamily: "var(--font-playfair), serif" }}
-          >
-            CRAFT
-          </h2>
+            <p
+              className="text-sm md:text-2xl font-light tracking-wide px-4"
+              style={{
+                color: "var(--text-primary)",
+                fontFamily: "var(--font-inter), sans-serif",
+              }}
+            >
+              Where your brand becomes unforgettable.
+            </p>
+          </div>
         </div>
+      )}
 
-        {/* Caption — GSAP fromTo opacity 0→1, y 100→0 in Phase 2B */}
-        <div
-          ref={dcCaptionRef}
-          style={{
-            position: "absolute",
-            // clamp: scales with viewport height so caption never collides with
-            // the centered headings on short screens (e.g. landscape mobile).
-            bottom: "clamp(1.5rem, 5vh, 5rem)",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-          }}
-        >
-          <p
-            className="text-sm md:text-2xl font-light tracking-wide px-4"
-            style={{
-              color: "var(--text-primary)",
-              fontFamily: "var(--font-inter), sans-serif",
-            }}
-          >
-            Where your brand becomes unforgettable.
-          </p>
+      {/* Static layout for reduced motion preference */}
+      {prefersReducedMotion && (
+        <div className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden mt-32 flex items-center justify-center">
+          <div className="absolute inset-0 select-none pointer-events-none">
+            <Image
+              src={PORTFOLIO_PROJECTS[LAST_INDEX].image}
+              alt="Digital Craft Background"
+              fill
+              sizes="100vw"
+              className="object-cover opacity-45"
+            />
+          </div>
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="relative z-10 text-center px-4">
+            <h2
+              className="text-[min(13vw,8vh)] md:text-[15vw] leading-none font-black tracking-tighter"
+              style={{
+                color: "var(--text-primary)",
+                fontFamily: "var(--font-playfair), serif",
+              }}
+            >
+              DIGITAL
+            </h2>
+            <h2
+              className="text-[min(13vw,8vh)] md:text-[15vw] leading-none font-black tracking-tighter reveal-title-craft-dc"
+              style={{ fontFamily: "var(--font-playfair), serif" }}
+            >
+              CRAFT
+            </h2>
+            <p
+              className="text-sm md:text-2xl font-light tracking-wide px-4 mt-12"
+              style={{
+                color: "var(--text-primary)",
+                fontFamily: "var(--font-inter), sans-serif",
+              }}
+            >
+              Where your brand becomes unforgettable.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

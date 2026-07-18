@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
 import emailjs from "@emailjs/browser";
 import gsap from "gsap";
@@ -76,7 +76,7 @@ export default function ContactSection() {
         from_name: formData.name,
         from_email: formData.email,
         message: formData.message,
-      }, publicKey);
+      }, { publicKey });
       setStatus("success");
       setFormData({ name: "", email: "", message: "", website: "" });
     } catch {

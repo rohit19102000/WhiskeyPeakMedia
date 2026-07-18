@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import Hero from "@/components/home/Hero";
-import IntroSection from "@/components/home/IntroSection";
+
+const Hero = dynamic(() => import("@/components/home/Hero"));
+const IntroSection = dynamic(() => import("@/components/home/IntroSection"));
 
 const ServicesSection = dynamic(() => import("@/components/home/ServicesSection"));
 const PortfolioSection = dynamic(() => import("@/components/home/PortfolioSection"));

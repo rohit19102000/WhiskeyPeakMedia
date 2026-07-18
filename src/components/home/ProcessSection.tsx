@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useLenis } from "lenis/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 /* ────────────────────────── STEP DATA ────────────────────────── */
 interface Step {
@@ -58,6 +59,7 @@ const STEPS: Step[] = [
 
 /* ────────────────────────── COMPONENT ────────────────────────── */
 export default function ProcessSection() {
+  const prefersReducedMotion = usePrefersReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -88,8 +90,8 @@ export default function ProcessSection() {
 
       if (index < prevIdx) {
         startY = 0;
-        startScale = 0.94;
-        startOpacity = 0.6;
+        startScale = 1.0;
+        startOpacity = 1.0;
       } else if (index === prevIdx) {
         startY = 0;
         startScale = 1.0;
@@ -103,22 +105,29 @@ export default function ProcessSection() {
 
       if (index < targetIdx) {
         endY = 0;
-        endScale = 0.94;
-        endOpacity = 0.6;
+        endScale = 1.0;
+        endOpacity = 1.0;
       } else if (index === targetIdx) {
         endY = 0;
         endScale = 1.0;
         endOpacity = 1.0;
       }
 
-      // Linear interpolation between states
+      // Interpolate
       const currentY = startY + (endY - startY) * val;
       const currentScale = startScale + (endScale - startScale) * val;
       const currentOpacity = startOpacity + (endOpacity - startOpacity) * val;
 
-      card.style.transform = `translate3d(0, ${currentY}%, 0) scale(${currentScale})`;
-      card.style.opacity = String(currentOpacity);
+      gsap.set(card, {
+        y: `${currentY}vh`,
+        scale: currentScale,
+        opacity: currentOpacity,
+      });
     });
+
+    // Update active indicators
+    setActiveIdx(targetIdx);
+    activeIdxRef.current = targetIdx;
   }, []);
 
   // Initialize elements state on mount
@@ -128,22 +137,19 @@ export default function ProcessSection() {
 
   /* ── goToStep with transition reveal ── */
   const goToStep = useCallback((targetIdx: number) => {
-    if (targetIdx < 0 || targetIdx >= STEPS.length || isAnimatingRef.current) return;
-
+    if (isAnimatingRef.current || targetIdx === activeIdxRef.current) return;
     isAnimatingRef.current = true;
-    const prevIdx = prevIdxRef.current;
-    prevIdxRef.current = targetIdx;
-    activeIdxRef.current = targetIdx;
 
-    // 1. Wipe to solid black
-    gsap.to(wipeRef.current, {
-      opacity: 1,
-      duration: 0.25,
+    const prevIdx = activeIdxRef.current;
+    prevIdxRef.current = prevIdx;
+
+    // 1. Wipe animation (0.3s)
+    const tl = gsap.timeline();
+    tl.to(wipeRef.current, {
+      opacity: 0.95,
+      duration: 0.3,
       onComplete: () => {
-        // Change text state
-        setActiveIdx(targetIdx);
-
-        // 2. Play transition variables automatically from 0 to 1
+        // 2. Animate step progress internally once screen is wiped
         const progressObj = { value: 0 };
         gsap.fromTo(
           progressObj,
@@ -173,6 +179,7 @@ export default function ProcessSection() {
 
   /* ── ScrollTrigger Pinning ── */
   useEffect(() => {
+    if (prefersReducedMotion) return;
     gsap.registerPlugin(ScrollTrigger);
 
     const container = containerRef.current;
@@ -250,54 +257,37 @@ export default function ProcessSection() {
       lockTrigger.kill();
       revealFirst.kill();
     };
-  }, [updateProgressElements, lenis]);
+  }, [lenis, prefersReducedMotion, updateProgressElements]);
 
   /* ── Scroll wheel & Touch swipe hijacking ── */
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    let isCooldown = false;
-    let touchStartY = 0;
-
+    if (prefersReducedMotion) return;
     const handleWheel = (e: WheelEvent) => {
       if (!isScrollLocked.current) return;
 
-      const direction = e.deltaY > 0 ? "down" : "up";
+      e.preventDefault();
+      if (isAnimatingRef.current) return;
 
-      let shouldBlock = false;
-      if (direction === "down" && activeIdxRef.current < STEPS.length - 1) {
-        shouldBlock = true;
-      } else if (direction === "up" && activeIdxRef.current > 0) {
-        shouldBlock = true;
-      }
+      const direction = e.deltaY > 0 ? 1 : -1;
+      const targetIdx = activeIdxRef.current + direction;
 
-      if (shouldBlock) {
-        e.preventDefault();
-        lenis?.stop();
-
-        if (isAnimatingRef.current || isCooldown) return;
-
-        // Auto snap section to top of viewport
-        lenis?.scrollTo(container, { duration: 0.3 });
-
-        isCooldown = true;
-        setTimeout(() => {
-          isCooldown = false;
-        }, 1100);
-
-        const targetIdx =
-          direction === "down"
-            ? activeIdxRef.current + 1
-            : activeIdxRef.current - 1;
+      if (targetIdx >= 0 && targetIdx < STEPS.length) {
         goToStep(targetIdx);
-      } else {
+      } else if (targetIdx === STEPS.length) {
+        // Unlock when scrolling down from final step
+        setIsFixed(false);
         lenis?.start();
         isScrollLocked.current = false;
+      } else if (targetIdx === -1) {
+        // Unlock when scrolling up from first step
         setIsFixed(false);
+        lenis?.start();
+        isScrollLocked.current = false;
       }
     };
 
+    // Touch support
+    let touchStartY = 0;
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY = e.touches[0].clientY;
     };
@@ -305,50 +295,37 @@ export default function ProcessSection() {
     const handleTouchMove = (e: TouchEvent) => {
       if (!isScrollLocked.current) return;
 
+      // Prevent default scrolling only when locked
+      e.preventDefault();
+
+      if (isAnimatingRef.current) return;
+
       const touchEndY = e.touches[0].clientY;
-      const diffY = touchStartY - touchEndY;
+      const diffY = touchStartY - touchEndY; // Positive = scrolling down
 
-      if (Math.abs(diffY) < 30) return;
+      if (Math.abs(diffY) > 30) {
+        const direction = diffY > 0 ? 1 : -1;
+        const targetIdx = activeIdxRef.current + direction;
 
-      const direction = diffY > 0 ? "down" : "up";
-
-      let shouldBlock = false;
-      if (direction === "down" && activeIdxRef.current < STEPS.length - 1) {
-        shouldBlock = true;
-      } else if (direction === "up" && activeIdxRef.current > 0) {
-        shouldBlock = true;
-      }
-
-      if (shouldBlock) {
-        if (e.cancelable) e.preventDefault();
-        lenis?.stop();
-
-        if (isAnimatingRef.current || isCooldown) return;
-
-        // Auto snap section to top of viewport
-        lenis?.scrollTo(container, { duration: 0.3 });
-
-        isCooldown = true;
-        setTimeout(() => {
-          isCooldown = false;
-        }, 1100);
-
-        const targetIdx =
-          direction === "down"
-            ? activeIdxRef.current + 1
-            : activeIdxRef.current - 1;
-        goToStep(targetIdx);
-      } else {
-        lenis?.start();
-        isScrollLocked.current = false;
-        setIsFixed(false);
+        if (targetIdx >= 0 && targetIdx < STEPS.length) {
+          goToStep(targetIdx);
+        } else if (targetIdx === STEPS.length) {
+          setIsFixed(false);
+          lenis?.start();
+          isScrollLocked.current = false;
+        } else if (targetIdx === -1) {
+          setIsFixed(false);
+          lenis?.start();
+          isScrollLocked.current = false;
+        }
       }
     };
 
+    // Override manual clicks on anchors to release lock smoothly
     const handleLinkClick = () => {
-      lenis?.start();
       isScrollLocked.current = false;
       setIsFixed(false);
+      lenis?.start();
     };
 
     // Add click listeners to all links in the header and navigation
@@ -370,7 +347,49 @@ export default function ProcessSection() {
       });
       lenis?.start();
     };
-  }, [goToStep, lenis]);
+  }, [goToStep, lenis, prefersReducedMotion]);
+
+  if (prefersReducedMotion) {
+    return (
+      <section id="process" className="py-32 bg-[#0A0A0A] text-foreground px-6">
+        <div className="max-w-5xl mx-auto flex justify-between items-center mb-16">
+          <span className="text-xs tracking-[0.3em] uppercase text-gold font-medium">Our Process</span>
+          <span className="text-sm font-medium text-dim">{STEPS.length} Phases</span>
+        </div>
+        <div className="max-w-5xl mx-auto flex flex-col gap-12">
+          {STEPS.map((step) => (
+            <div
+              key={step.num}
+              className="relative h-[50vh] md:h-[60vh] rounded-3xl overflow-hidden border border-white/5 shadow-2xl"
+            >
+              <Image
+                src={step.img}
+                alt={step.title}
+                fill
+                sizes="(max-width: 1500px) 92vw, 1500px"
+                className="object-cover opacity-45"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent" />
+              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-16 gap-4">
+                <span className="text-xs md:text-sm tracking-[0.25em] uppercase text-gold font-medium">
+                  Step {step.num} · {step.accent}
+                </span>
+                <h3 className="text-3xl md:text-5xl font-bold leading-none font-playfair text-foreground" style={{ fontFamily: "var(--font-playfair)" }}>
+                  {step.title}
+                </h3>
+                <p className="text-sm md:text-lg leading-relaxed text-body max-w-2xl">
+                  {step.body}
+                </p>
+                <p className="text-xs md:text-sm leading-relaxed text-dim max-w-2xl border-l-2 border-gold/25 pl-4">
+                  {step.detail}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>

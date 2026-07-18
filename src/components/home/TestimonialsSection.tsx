@@ -4,12 +4,15 @@ import React from "react";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { TestimonialsColumn } from "@/components/ui/testimonials-columns";
 import { TESTIMONIALS } from "@/data/testimonials";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 const firstColumn = TESTIMONIALS.slice(0, 4);
 const secondColumn = TESTIMONIALS.slice(4, 8);
 const thirdColumn = TESTIMONIALS.slice(8, 12);
 
 export default function TestimonialsSection() {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
   return (
     <section className="bg-background text-foreground">
       <ContainerScroll
@@ -28,8 +31,8 @@ export default function TestimonialsSection() {
         }
       >
         <div
-          className="flex justify-center gap-6 py-10 h-[40rem] overflow-hidden"
-          style={{
+          className={prefersReducedMotion ? "flex flex-wrap justify-center gap-6 py-10 h-auto overflow-visible" : "flex justify-center gap-6 py-10 h-[40rem] overflow-hidden"}
+          style={prefersReducedMotion ? {} : {
             maskImage:
               "linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
             WebkitMaskImage:

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 type Testimonial = {
   text: string;
@@ -18,18 +19,20 @@ export const TestimonialsColumn = ({
   duration?: number;
   className?: string;
 }) => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
   return (
     <div className={className}>
       <motion.div
-        animate={{ translateY: "-50%" }}
-        transition={{
+        animate={prefersReducedMotion ? { translateY: 0 } : { translateY: "-50%" }}
+        transition={prefersReducedMotion ? { duration: 0 } : {
           duration,
           repeat: Infinity,
           ease: "linear",
         }}
         className="flex flex-col gap-6 pb-6 transform-gpu"
       >
-        {[...Array(2)].map((_, loopIndex) =>
+        {(prefersReducedMotion ? [1] : [...Array(2)]).map((_, loopIndex) =>
           testimonials.map((t, i) => (
             <div
               key={`${loopIndex}-${i}`}
