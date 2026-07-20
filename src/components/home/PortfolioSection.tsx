@@ -446,15 +446,17 @@ export default function PortfolioSection() {
       <div className={prefersReducedMotion ? "max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pointer-events-auto relative" : "absolute inset-0 pointer-events-none"}>
         {PORTFOLIO_PROJECTS.map((project, i) => {
           const isLastCard = i === LAST_INDEX;
+          const CardWrapper = (isLastCard && !prefersReducedMotion ? "div" : Link) as any;
           return (
-            <div
+            <CardWrapper
+              href={CardWrapper === Link ? `/portfolio/${project.slug}` : undefined}
               key={project.title}
-              ref={(el) => {
+              ref={(el: any) => {
                 itemsRef.current[i] = el;
               }}
               // transition-[filter] only — GSAP owns opacity (and filter for last card in Phase 2A)
               className={prefersReducedMotion
-                ? "relative w-full h-[38vh] rounded-3xl overflow-hidden group transition-[filter] duration-700 cursor-pointer shadow-2xl border border-white/5 grayscale-0"
+                ? "relative block w-full h-[38vh] rounded-3xl overflow-hidden group transition-[filter] duration-700 cursor-pointer shadow-2xl border border-white/5 grayscale-0"
                 : `absolute w-[68vw] h-[34vh] md:w-[26vw] md:h-[38vh] rounded-3xl overflow-hidden group transition-[filter] duration-700 cursor-pointer transform-gpu pointer-events-auto shadow-2xl border border-white/5 ${
                     clickedCard === i ? "grayscale-0" : "grayscale md:hover:grayscale-0"
                   }`
@@ -522,7 +524,7 @@ export default function PortfolioSection() {
                   {project.title}
                 </h3>
               </div>
-            </div>
+            </CardWrapper>
           );
         })}
       </div>
