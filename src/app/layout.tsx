@@ -6,6 +6,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Preloader from "@/components/ui/Preloader";
 import { PRIMARY_EMAIL, PRIMARY_PHONE, SITE_URL } from "@/data/constants";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -109,6 +111,8 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
+          <Analytics />
+          <SpeedInsights />
         </SmoothScroll>
       </body>
     </html>
